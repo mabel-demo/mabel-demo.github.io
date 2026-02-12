@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>农残混管助手 · 蔬菜水果版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>浙农·个性化快检混管专家</title>
     <style>
         * {
             box-sizing: border-box;
@@ -11,483 +11,450 @@
             padding: 0;
         }
         body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #f5f8f4;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f0f5ec;
             padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
         }
         .container {
-            max-width: 650px;
+            max-width: 700px;
             width: 100%;
             background: white;
-            border-radius: 32px;
-            box-shadow: 0 10px 25px rgba(0,30,10,0.05);
-            padding: 28px 24px;
-            border: 1px solid #e2f0da;
+            border-radius: 36px;
+            box-shadow: 0 12px 28px rgba(0,40,20,0.04);
+            padding: 28px 26px;
+            border: 1px solid #d6e9d0;
         }
         h1 {
-            font-size: 28px;
-            font-weight: 600;
-            color: #1e3a2a;
-            margin-bottom: 6px;
-            letter-spacing: -0.3px;
+            font-size: 26px;
+            font-weight: 700;
+            color: #0f3b1c;
             display: flex;
             align-items: center;
             gap: 8px;
+            margin-bottom: 6px;
         }
         .subhead {
-            color: #4a6b4f;
+            background: #e5f2e0;
+            padding: 16px 20px;
+            border-radius: 24px;
             font-size: 15px;
-            margin-bottom: 28px;
-            border-left: 5px solid #6daa7c;
-            padding-left: 16px;
-            background: #f0f7ee;
-            border-radius: 0 12px 12px 0;
-            line-height: 1.5;
+            color: #1e4a2a;
+            margin-bottom: 24px;
+            border-left: 6px solid #2e8b57;
+            line-height: 1.6;
         }
-        .search-area {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 30px;
+        .search-section {
+            background: #f8fff6;
+            border-radius: 28px;
+            padding: 22px;
+            margin-bottom: 20px;
+            border: 1px solid #c8e0cd;
         }
         label {
             font-weight: 600;
-            color: #1e4620;
-            font-size: 15px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            color: #1a4a2c;
+            font-size: 16px;
+            display: block;
+            margin-bottom: 10px;
         }
-        .input-wrapper {
+        .input-group {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
         }
-        #searchInput {
+        #cropInput {
             flex: 1;
             padding: 16px 18px;
-            border: 1.5px solid #d0e2cf;
-            border-radius: 50px;
+            border: 1.5px solid #bcddb6;
+            border-radius: 60px;
             font-size: 16px;
             background: white;
             transition: 0.2s;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.02);
         }
-        #searchInput:focus {
-            border-color: #2e7d5e;
+        #cropInput:focus {
+            border-color: #267349;
             outline: none;
-            box-shadow: 0 0 0 4px rgba(46,125,94,0.1);
+            box-shadow: 0 0 0 4px rgba(38,115,73,0.1);
         }
         #searchBtn {
-            background: #1e4a2c;
+            background: #1d6b3c;
             color: white;
             border: none;
-            padding: 0 28px;
-            border-radius: 50px;
+            padding: 0 32px;
+            border-radius: 60px;
             font-weight: 600;
             font-size: 16px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
             cursor: pointer;
             transition: 0.15s;
-            border: 1px solid #0e3a1e;
-            letter-spacing: 0.3px;
+            border: 1px solid #0a3b1e;
         }
         #searchBtn:hover {
-            background: #256f3b;
-            transform: scale(0.98);
+            background: #2a8e4c;
+            transform: scale(0.97);
         }
-        .result-card {
-            background: #fafffb;
-            border-radius: 28px;
-            padding: 24px;
-            border: 1px solid #c8e0cd;
-            margin-top: 10px;
-        }
-        .crop-name {
-            font-size: 32px;
-            font-weight: 700;
-            color: #0f3b1c;
-            margin-bottom: 6px;
-            display: flex;
-            align-items: baseline;
-            gap: 10px;
-        }
-        .badge {
-            font-size: 16px;
-            background: #eaf3e5;
-            padding: 5px 15px;
-            border-radius: 40px;
-            color: #1d4e2a;
-            font-weight: 500;
-        }
-        .pesticide-list {
-            margin: 20px 0 16px;
-            background: #eef8ef;
-            border-radius: 20px;
-            padding: 18px 20px;
-        }
-        .pesticide-title {
-            font-weight: 600;
-            color: #1d482b;
-            margin-bottom: 12px;
-            font-size: 17px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .pest-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px dashed #b6d2bb;
-        }
-        .pest-item:last-child {
-            border-bottom: none;
-        }
-        .pest-name {
-            font-weight: 500;
-            color: #1e3a2a;
-        }
-        .pest-rate {
-            background: #fff;
-            padding: 4px 14px;
-            border-radius: 30px;
-            font-size: 15px;
-            color: #154f21;
-            font-weight: 600;
-        }
-        .qualified-area {
-            background: white;
-            border-radius: 18px;
-            padding: 18px;
-            margin: 12px 0 8px;
-            border: 1px solid #cfecd2;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .percent {
-            font-size: 42px;
-            font-weight: 800;
-            color: #1a3a23;
-            line-height: 1;
-        }
-        .percent-unit {
-            font-size: 18px;
-            color: #4d7055;
-            margin-left: 5px;
-        }
-        .mix-section {
-            background: #fffbeb;
-            border-radius: 24px;
-            padding: 20px;
-            margin-top: 16px;
-            border-left: 8px solid #e2a14e;
-        }
-        .mix-title {
-            font-weight: 700;
-            color: #6a4a1c;
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-        .mix-desc {
-            font-size: 22px;
-            font-weight: 700;
-            color: #1e4a2c;
-            background: white;
-            padding: 15px 18px;
-            border-radius: 18px;
-            border: 1px solid #eedba7;
-            line-height: 1.4;
-        }
-        .no-result {
-            color: #647b6a;
-            text-align: center;
-            padding: 30px 20px;
-            background: #f1f9ef;
-            border-radius: 28px;
-            font-size: 17px;
-        }
-        .footer-note {
-            margin-top: 28px;
-            font-size: 13px;
-            color: #6c8372;
-            text-align: center;
-            border-top: 1px solid #dbecdb;
-            padding-top: 22px;
-        }
-        .sample-tags {
+        .tag-cloud {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             margin-top: 16px;
         }
-        .sample-tag {
+        .crop-tag {
             background: #e4efe4;
-            padding: 8px 18px;
+            padding: 8px 20px;
             border-radius: 40px;
             font-size: 15px;
-            color: #1d4e2a;
             font-weight: 500;
-            border: 1px solid #afcaaf;
+            color: #1a4e2a;
+            border: 1px solid #b1d0b1;
             cursor: pointer;
             transition: 0.1s;
         }
-        .sample-tag:hover {
+        .crop-tag:hover {
             background: #c8e0c8;
         }
-        @media (max-width: 480px) {
-            .container { padding: 20px; }
-            .crop-name { font-size: 28px; }
+        .result-panel {
+            background: #fafffc;
+            border-radius: 28px;
+            padding: 24px;
+            border: 1px solid #c3ddc3;
+            margin-top: 8px;
+        }
+        .crop-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: #0f4620;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+        }
+        .risk-badge {
+            background: #fbe9e7;
+            color: #a33b2b;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .pesticide-box {
+            background: #ebf5ea;
+            border-radius: 22px;
+            padding: 18px 20px;
+            margin: 20px 0 16px;
+        }
+        .pest-header {
+            font-weight: 700;
+            color: #154f2a;
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+        .pest-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed #b1cfb1;
+        }
+        .pest-name {
+            font-weight: 550;
+        }
+        .pest-level {
+            background: white;
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #216035;
+        }
+        .pass-rate-area {
+            background: white;
+            padding: 18px;
+            border-radius: 20px;
+            border: 1px solid #bee0be;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .rate-number {
+            font-size: 44px;
+            font-weight: 800;
+            color: #1a4a2a;
+            line-height: 1;
+        }
+        .mix-section {
+            background: #fff7e6;
+            border-radius: 24px;
+            padding: 22px;
+            border-left: 8px solid #d98c2e;
+            margin: 16px 0;
+        }
+        .mix-title {
+            font-weight: 700;
+            color: #6b4a1e;
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+        .mix-detail {
+            background: white;
+            padding: 18px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e4a2a;
+            border: 1px solid #f0d5a7;
+        }
+        .enzyme-note {
+            background: #e0eef0;
+            padding: 18px;
+            border-radius: 20px;
+            margin: 16px 0 8px;
+            color: #0a4a4a;
+            border-left: 6px solid #359696;
+        }
+        .trace-link {
+            background: #f2f0e6;
+            padding: 18px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 18px;
+            border: 1px solid #cfcfb5;
+        }
+        .btn {
+            background: #3f6e4c;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        .btn:hover {
+            background: #2a8e4c;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 13px;
+            color: #6a7f6e;
+            text-align: center;
+            border-top: 1px solid #deecde;
+            padding-top: 24px;
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>🌱 农残混管指引</h1>
+    <h1>🌾 浙农·快检混管实验室</h1>
     <div class="subhead">
-        输入蔬菜/水果品种 → 查看近3年高频农残、合格率。<br>
-        <span style="background: #2e6b42; color: white; padding: 3px 12px; border-radius: 40px; font-size: 14px; display: inline-block; margin-top: 8px;">🟢 合格率 ≥94% 自动生成混管方案</span>
+        🧪 基于酶抑制法特性 · 个性化混管方案生成<br>
+        智能匹配高风险农残 · 胶体金法辅助验证 · 浙农码溯源对接
     </div>
 
-    <div class="search-area">
-        <label>🔍 输入品种名称</label>
-        <div class="input-wrapper">
-            <input type="text" id="searchInput" placeholder="例如：芹菜、草莓、韭菜、豇豆" value="芹菜">
-            <button id="searchBtn">查询</button>
+    <div class="search-section">
+        <label>🔎 输入蔬菜/水果品种</label>
+        <div class="input-group">
+            <input type="text" id="cropInput" placeholder="例如：豇豆、韭菜、芹菜、草莓" value="豇豆">
+            <button id="searchBtn">检测 & 混管推荐</button>
         </div>
-        <div class="sample-tags">
-            <span class="sample-tag">芹菜</span>
-            <span class="sample-tag">草莓</span>
-            <span class="sample-tag">韭菜</span>
-            <span class="sample-tag">豇豆</span>
-            <span class="sample-tag">上海青</span>
-            <span class="sample-tag">菠菜</span>
+        <div class="tag-cloud">
+            <span class="crop-tag">豇豆</span>
+            <span class="crop-tag">韭菜</span>
+            <span class="crop-tag">芹菜</span>
+            <span class="crop-tag">草莓</span>
+            <span class="crop-tag">上海青</span>
+            <span class="crop-tag">菠菜</span>
         </div>
     </div>
 
-    <!-- 结果展示区：动态填充 -->
-    <div id="resultContainer">
-        <!-- 默认会通过JS加载芹菜数据 -->
-    </div>
-    <div class="footer-note">
-        ⚖️ 数据综合自近3年风险监测及学术文献，混管建议参考T/SQIA 066-2024 混合样品测定指引。
+    <!-- 动态结果 -->
+    <div id="resultArea"></div>
+
+    <div class="footer">
+        ⚙️ 数据融合官方农残监测 & 酶抑制法技术规范 · 混管策略参考T/SQIA 066-2024<br>
+        🔗 浙农码溯源接口就绪 · 报告生成模拟版
     </div>
 </div>
 
 <script>
-    // ---------- 🌽 农产品农残知识库（你随时可以扩充）--------
-    const cropDatabase = {
+    // ---------- 浙农版 农产品知识库（含高风险农残+酶抑制法局限+推荐方法）--------
+    const cropDB = {
+        "豇豆": {
+            name: "豇豆",
+            passRate: 86.2,
+            pesticides: [
+                { name: "氧乐果", level: "极高",推荐方法: "胶体金试纸条" },
+                { name: "乙酰甲胺磷", level: "高",推荐方法: "胶体金试纸条" },
+                { name: "灭蝇胺", level: "中高",推荐方法: "酶抑制法/金标" }
+            ],
+            matrixRisk: "豆荚表面蜡质，建议增加提取液比例 1:1.2",
+            enzymeLimit: "乙酰甲胺磷对酶抑制法不敏感，易漏检，推荐胶体金法"
+        },
+        "韭菜": {
+            name: "韭菜",
+            passRate: 79.5,
+            pesticides: [
+                { name: "辛硫磷", level: "极高",推荐方法: "胶体金试纸条" },
+                { name: "对硫磷", level: "高",推荐方法: "胶体金试纸条" },
+                { name: "腐霉利", level: "高",推荐方法: "胶体金法（酶抑制法无效）" }
+            ],
+            matrixRisk: "辛辣基质干扰酶活性，建议样品稀释2倍",
+            enzymeLimit: "辛硫磷、对硫磷抑制率偏低，必须联合胶体金"
+        },
         "芹菜": {
             name: "芹菜",
-            passRate: 82.3,      // 合格率(%)
+            passRate: 82.3,
             pesticides: [
-                { name: "腐霉利",超标频率: "极高" },
-                { name: "毒死蜱",超标频率: "较高" },
-                { name: "甲拌磷",超标频率: "中" }
+                { name: "毒死蜱", level: "高",推荐方法: "胶体金试纸条" },
+                { name: "甲拌磷", level: "中高",推荐方法: "酶抑制法/胶体金" },
+                { name: "腐霉利", level: "中",推荐方法: "酶抑制法" }
             ],
-            mixSuggestion: "🥬 常规风险品种，合格率低于94%，无需混管，建议单株送检。"
+            matrixRisk: "挥发性物质干扰，建议匀浆后静置5分钟",
+            enzymeLimit: "毒死蜱检测限较高，推荐胶体金辅助"
         },
         "草莓": {
             name: "草莓",
             passRate: 97.5,
             pesticides: [
-                { name: "烯酰吗啉",超标频率: "较高" },
-                { name: "吡唑醚菌酯",超标频率: "中" },
-                { name: "啶虫脒",超标频率: "中" }
+                { name: "烯酰吗啉", level: "中",推荐方法: "胶体金" },
+                { name: "吡唑醚菌酯", level: "中低",推荐方法: "酶抑制法" }
             ],
-            // 合格率≥94% → 自动生成混管（具体逻辑见函数）
-        },
-        "韭菜": {
-            name: "韭菜",
-            passRate: 79.8,
-            pesticides: [
-                { name: "腐霉利",超标频率: "极高" },
-                { name: "克百威",超标频率: "高" },
-                { name: "氯氟氰菊酯",超标频率: "中" }
-            ],
-            mixSuggestion: "🧅 本品合格率偏低，无需混管。建议每批抽样10株。"
-        },
-        "豇豆": {
-            name: "豇豆",
-            passRate: 86.4,
-            pesticides: [
-                { name: "灭蝇胺",超标频率: "高" },
-                { name: "氧乐果",超标频率: "较高" },
-                { name: "阿维菌素",超标频率: "中" }
-            ],
-            mixSuggestion: "🫘 合格率未达94%，暂不启用混管。"
+            matrixRisk: "果酸干扰小，常规提取",
+            enzymeLimit: "多数杀菌剂抑制率正常"
         },
         "上海青": {
             name: "上海青",
-            passRate: 93.2,   // 低于94%
+            passRate: 93.2,
             pesticides: [
-                { name: "啶虫脒",超标频率: "较高" },
-                { name: "氯氰菊酯",超标频率: "中" },
-                { name: "吡虫啉",超标频率: "中" }
+                { name: "啶虫脒", level: "较高",推荐方法: "胶体金" },
+                { name: "氯氰菊酯", level: "中",推荐方法: "酶抑制法" }
             ],
-            mixSuggestion: "🥬 合格率低于94%，常规送检即可。"
+            matrixRisk: "叶绿素影响小，直接检测",
+            enzymeLimit: "啶虫脒需特异性试纸条"
         },
         "菠菜": {
             name: "菠菜",
             passRate: 95.8,
             pesticides: [
-                { name: "毒死蜱",超标频率: "中" },
-                { name: "氯氟氰菊酯",超标频率: "中" },
-                { name: "百菌清",超标频率: "中低" }
-            ]
-        },
-        "苹果": {
-            name: "苹果",
-            passRate: 98.1,
-            pesticides: [
-                { name: "多菌灵",超标频率: "中低" },
-                { name: "甲基硫菌灵",超标频率: "低" }
-            ]
-        },
-        "葡萄": {
-            name: "葡萄",
-            passRate: 91.4,
-            pesticides: [
-                { name: "己唑醇",超标频率: "中" },
-                { name: "嘧菌酯",超标频率: "中" }
+                { name: "毒死蜱", level: "中",推荐方法: "胶体金" },
+                { name: "氯氟氰菊酯", level: "中低",推荐方法: "酶抑制法" }
             ],
-            mixSuggestion: "🍇 合格率低于94%，无需混管。"
+            matrixRisk: "色素重，建议活性炭脱色",
+            enzymeLimit: "无显著局限"
         }
     };
 
-    // 为部分品种预置混管，同时对于合格率≥94% 强制生成混管建议（覆盖预设）
-    function generateMixSuggestion(cropName, passRate) {
-        // 根据你的要求：合格率 ≥ 94% 生成混管方式
-        if (passRate >= 94) {
-            if (cropName.includes("草莓")) {
-                return "🍓 混管建议：每5颗草莓混合为1份样品（果柄切除后混匀）。";
-            } else if (cropName.includes("菠菜")) {
-                return "🌿 混管建议：每10株菠菜混为1样，切段混匀后取500g。";
-            } else if (cropName.includes("苹果")) {
-                return "🍎 混管建议：每12个苹果（对角线取样）混为1份，取果皮果肉混合。";
-            } else {
-                // 通用混管方案
-                return `✅ ${cropName}合格率${passRate}%≥94%，建议每8~10个个体混合为1个检测样。`;
-            }
-        } else {
-            // 低于94%：显示库里的预设，若无则给默认文案
-            const crop = cropDatabase[cropName];
-            if (crop && crop.mixSuggestion) return crop.mixSuggestion;
-            else return `⛔ 合格率${passRate}%＜94%，暂不推荐混管。建议加强抽检比例。`;
-        }
+    // 混管数智能推荐：不合格率1-6% → 混管数4-10个
+    function calcMixCount(passRate) {
+        let failRate = 100 - passRate;  // 不合格率%
+        if (failRate <= 1) return 10;
+        if (failRate <= 2) return 9;
+        if (failRate <= 3) return 8;
+        if (failRate <= 4) return 7;
+        if (failRate <= 5) return 6;
+        if (failRate <= 6) return 5;
+        return 4;  // >6%不合格 → 强风险，混管数降低
     }
 
-    // 渲染页面
     function renderCrop(cropName) {
-        const container = document.getElementById("resultContainer");
-        const crop = cropDatabase[cropName];
-        
+        const area = document.getElementById("resultArea");
+        const crop = cropDB[cropName];
         if (!crop) {
-            container.innerHTML = `<div class="no-result">🌫️ 暂无「${cropName}」的农残档案<br><span style="font-size:14px; margin-top:12px; display:block;">试试上方样品词，或联系管理员添加。</span></div>`;
+            area.innerHTML = `<div style="background:#faf0e6; padding:40px; border-radius:28px; text-align:center;color:#4d5f4a;">🌫️ 暂未收录「${cropName}」风险档案，可选上方样品</div>`;
             return;
         }
 
-        const pass = crop.passRate;
-        const hasMix = pass >= 94;   // 混管标识
-        // 最终混管建议（优先使用动态生成的）
-        const finalMixSuggestion = generateMixSuggestion(cropName, pass);
-
-        // 农残列表html
+        let pass = crop.passRate;
+        let mixCount = calcMixCount(pass);
+        let sampleVol = (mixCount * 2.5).toFixed(1);  // 模拟提取液体积
+        
+        // 生成混管方案文本
+        let mixSuggestion = `🔄 混管数：每管 ${mixCount} 个样品 | 样品用量：${(20/mixCount).toFixed(1)}g/个 | 提取液比例 1:${mixCount>6?'1.5':'1.0'} (规避基质干扰)`;
+        
+        // 农残列表
         let pestHtml = '';
-        if (crop.pesticides && crop.pesticides.length > 0) {
-            crop.pesticides.forEach(p => {
-                pestHtml += `<div class="pest-item"><span class="pest-name">🧪 ${p.name}</span><span class="pest-rate">${p.超标频率}</span></div>`;
-            });
-        } else {
-            pestHtml = '<div style="padding: 12px; color: #5f735a;">暂无详细农残数据</div>';
-        }
+        crop.pesticides.forEach(p => {
+            pestHtml += `<div class="pest-row"><span class="pest-name">🧬 ${p.name}</span><span class="pest-level">${p.level} · 推荐${p.推荐方法}</span></div>`;
+        });
 
-        // 构建卡片
+        // 酶抑制法局限性提示
+        let enzymeNote = crop.enzymeLimit || '常规酶抑制法适用，建议阴性样品抽检复核';
+
+        // 完整卡片
         let html = `
-            <div class="result-card">
-                <div class="crop-name">
-                    ${crop.name}
-                    <span class="badge">${hasMix ? '🔄 启用混管' : '📦 单样送检'}</span>
+            <div class="result-panel">
+                <div class="crop-title">
+                    <span>${crop.name}</span>
+                    <span class="risk-badge">⚠️ 高风险品种</span>
                 </div>
-                <div class="pesticide-list">
-                    <div class="pesticide-title">⚠️ 近三年高频农残</div>
+                <div class="pesticide-box">
+                    <div class="pest-header">🧪 高风险农残精准匹配（动态更新）</div>
                     ${pestHtml}
-                </div>
-                <div class="qualified-area">
-                    <span style="font-weight:600; color: #1d482b;">🧾 总体合格率</span>
-                    <span><span class="percent">${pass}</span><span class="percent-unit">%</span></span>
-                </div>
-        `;
-
-        // 混管区域：只有合格率≥94%才显示混管方案
-        if (hasMix) {
-            html += `
-                <div class="mix-section">
-                    <div class="mix-title">🧴 混管生成方案（合格率≥94%）</div>
-                    <div class="mix-desc">${finalMixSuggestion}</div>
-                    <div style="margin-top: 14px; font-size: 15px; color: #5f4a1a; background: #fff9e0; padding: 10px 16px; border-radius: 30px;">
-                    🧪 混样检测可降低单样成本，建议平行样2次。
+                    <div style="margin-top:14px; background:#ddeedd; padding:12px; border-radius:18px; font-size:15px;">
+                        🧴 基质干扰：${crop.matrixRisk}
                     </div>
                 </div>
-            `;
-        } else {
-            // 低于94% —— 显示不需要混管，但是给出具体建议（原本预设或者通用）
-            html += `
-                <div style="background: #e8f0e7; border-radius: 18px; padding: 18px; margin-top: 8px; color: #2a5432;">
-                    <span style="font-weight:700;">📌 农残风险较高，合格率低于94%</span>
-                    <div style="margin-top: 10px; font-size: 16px;">${finalMixSuggestion}</div>
-                </div>
-            `;
-        }
 
-        html += `</div>`; // 关闭card
-        container.innerHTML = html;
+                <div class="pass-rate-area">
+                    <span style="font-weight:650; font-size:18px;">📊 合格率</span>
+                    <span><span class="rate-number">${pass}</span>%</span>
+                </div>
+
+                <div class="mix-section">
+                    <div class="mix-title">🧴 混管方案智能推荐</div>
+                    <div class="mix-detail">${mixSuggestion}</div>
+                    <div style="margin-top:16px; background:#fff4df; padding:14px; border-radius:18px;">
+                        📉 预估不合格率 ${(100-pass).toFixed(1)}% · 最优混管数 ${mixCount} 个/管
+                    </div>
+                </div>
+
+                <div class="enzyme-note">
+                    <span style="font-weight:700; font-size:18px;">🧪 酶抑制法检测局限性</span><br>
+                    ${enzymeNote}<br>
+                    <span style="display:inline-block; background:#2b6b4a; color:white; padding:6px 18px; border-radius:40px; margin-top:12px;">🟢 推荐胶体金试纸条：${crop.pesticides.map(p=>p.推荐方法).filter((v,i,a)=>a.indexOf(v)===i).join(' / ')}</span>
+                </div>
+
+                <div class="trace-link">
+                    <span style="font-weight:700; color:#2d4a2d;">📋 浙农码溯源 · 检测报告</span>
+                    <div>
+                        <button class="btn" onclick="alert('✅ 模拟生成标准化检测报告（含混管参数、高风险农残、胶体金建议）\n📎 对接浙江农产品质量安全追溯平台')">📄 生成报告</button>
+                        <button class="btn" style="background:#5f7e5f; margin-left:10px;" onclick="alert('🌐 浙农码溯源链接：https://zjnongan.gov.cn/trace?batch=ZN${Date.now()}')">🔗 关联浙农码</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        area.innerHTML = html;
     }
 
-    // 初始化 + 监听事件
     window.onload = function() {
-        const searchBtn = document.getElementById("searchBtn");
-        const searchInput = document.getElementById("searchInput");
-        const tagList = document.querySelectorAll(".sample-tag");
+        const btn = document.getElementById("searchBtn");
+        const input = document.getElementById("cropInput");
+        const tags = document.querySelectorAll(".crop-tag");
 
-        // 默认加载芹菜（低合格率展示）
-        renderCrop("芹菜");
+        renderCrop("豇豆");  // 默认展示豇豆（高风险典型）
 
-        // 搜索按钮
-        searchBtn.addEventListener("click", function() {
-            const query = searchInput.value.trim();
-            if (query === "") {
-                alert("请输入品种名称");
-                return;
-            }
-            renderCrop(query);
+        btn.addEventListener("click", function() {
+            let q = input.value.trim();
+            if (q) renderCrop(q);
         });
 
-        // 回车
-        searchInput.addEventListener("keypress", function(e) {
-            if (e.key === "Enter") {
-                searchBtn.click();
-            }
+        input.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") btn.click();
         });
 
-        // 标签点击
-        tagList.forEach(tag => {
+        tags.forEach(tag => {
             tag.addEventListener("click", function() {
-                const text = this.innerText;
-                searchInput.value = text;
+                let text = this.innerText;
+                input.value = text;
                 renderCrop(text);
             });
         });
     };
 </script>
-
 </body>
 </html>
