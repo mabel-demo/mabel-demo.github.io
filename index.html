@@ -19,7 +19,7 @@
             align-items: center;
         }
         .container {
-            max-width: 900px;
+            max-width: 950px;
             width: 100%;
             background: white;
             border-radius: 36px;
@@ -80,7 +80,7 @@
         }
         .input-group {
             flex: 1;
-            min-width: 200px;
+            min-width: 180px;
         }
         label {
             font-weight: 600;
@@ -225,35 +225,45 @@
         乙酰甲胺磷 | 氧乐果 | 甲胺磷 | 对硫磷 | 杀扑磷 | 丁硫克百威
     </div>
 
-    <!-- 1. 数据采集模块 -->
+    <!-- 1. 数据采集模块（修正为四吸光度，国标公式） -->
     <div class="card">
-        <div class="section-title">📡 1. 数据采集（AI吸光度识别）</div>
+        <div class="section-title">📡 1. 数据采集（国标法 ΔAc / ΔAs）</div>
         <div class="flex-row">
             <div class="input-group">
-                <label>🔹 空白对照吸光度 (Ac)</label>
-                <input type="number" id="blankAc" step="0.001" value="0.850" placeholder="例：0.850">
+                <label>🧪 对照组 3分钟前吸光度</label>
+                <input type="number" id="blankAcBefore" step="0.001" value="0.850" placeholder="例：0.850">
             </div>
             <div class="input-group">
-                <label>🔹 样品吸光度 (As)</label>
-                <input type="number" id="sampleAs" step="0.001" value="0.510" placeholder="例：0.510">
+                <label>🧪 对照组 3分钟后吸光度</label>
+                <input type="number" id="blankAcAfter" step="0.001" value="0.510" placeholder="例：0.510">
             </div>
         </div>
         <div class="flex-row">
             <div class="input-group">
-                <label>📊 抑制率 (%) <span style="font-weight:normal; color:#4f6f55;">(自动计算/手动)</span></label>
-                <input type="number" id="inhibitionRate" step="0.1" value="40.0" placeholder="抑制率">
+                <label>🌱 样品组 3分钟前吸光度</label>
+                <input type="number" id="sampleAsBefore" step="0.001" value="0.850" placeholder="例：0.850">
+            </div>
+            <div class="input-group">
+                <label>🌱 样品组 3分钟后吸光度</label>
+                <input type="number" id="sampleAsAfter" step="0.001" value="0.340" placeholder="例：0.340">
+            </div>
+        </div>
+        <div class="flex-row">
+            <div class="input-group">
+                <label>📊 抑制率 (%) <span style="font-weight:normal; color:#4f6f55;">(自动计算)</span></label>
+                <input type="number" id="inhibitionRate" step="0.1" value="50.0" placeholder="抑制率" readonly style="background:#f0f7f0;">
             </div>
             <div class="input-group">
                 <label>🧪 平行样抑制率 (%)</label>
-                <input type="number" id="inhibitionRateParallel" step="0.1" value="39.5">
+                <input type="number" id="inhibitionRateParallel" step="0.1" value="49.5">
             </div>
         </div>
         <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px;">
-            <button id="calcInhibition">🧮 自动计算抑制率</button>
+            <button id="calcInhibition">🧮 按国标公式计算抑制率</button>
             <button id="scanSimulate" class="secondary">📷 模拟扫码枪录入</button>
         </div>
         <div style="margin-top: 16px; background: #eaf3e5; padding: 12px 18px; border-radius: 30px; font-size: 14px;">
-            ✅ 当前数据源：<span id="dataSource">手动录入模式</span> · 符合GB 23200.113-2026记录留存要求
+            ✅ 当前数据源：<span id="dataSource">待计算</span> · 符合GB 23200.113-2026记录留存要求
         </div>
     </div>
 
@@ -271,8 +281,8 @@
     <div class="card">
         <div class="section-title">✅ 3. 结果判定 & 质控</div>
         <div class="qc-status" id="qcStatus">
-            <div>🧪 空白对照 ΔAc = <span id="deltaAc">0.340</span> <span id="deltaAcStatus">(≥0.3，酶活性有效)</span></div>
-            <div>📊 平行样相对偏差 = <span id="relativeDeviation">1.26%</span> <span id="deviationStatus">(≤10%，有效)</span></div>
+            <div>🧪 对照组 ΔAc = <span id="deltaAc">0.340</span> <span id="deltaAcStatus">(≥0.3，酶活性有效)</span></div>
+            <div>📊 平行样相对偏差 = <span id="relativeDeviation">1.01%</span> <span id="deviationStatus">(≤10%，有效)</span></div>
             <div>📈 阳性回收率 = <span id="recoveryRate">95%</span> <span id="recoveryStatus">(80%-120%，合格)</span></div>
         </div>
         <div id="judgementArea" style="margin-top: 20px; padding: 18px; background: #f0f0e0; border-radius: 20px;">
@@ -303,7 +313,7 @@
     </div>
 
     <div class="footer">
-        ⚖️ 符合 GB 23200.113-2026、GB 2763-2021 · 浓度推导误差 ≤3% · 平行样偏差 ≤10% · 酶活性ΔAc＜0.3判无效
+        ⚖️ 符合 GB 23200.113-2026、GB 2763-2021 · 抑制率公式 (ΔAc-ΔAs)/ΔAc ×100% · 酶活性ΔAc＜0.3判无效
     </div>
 </div>
 
@@ -315,10 +325,7 @@
             limit: 0.05, 
             unit: "mg/kg", 
             curve: "y = 0.023x² + 0.87x + 0.12",
-            // 反向推导函数：给定抑制率x，返回浓度y
             derive: function(x) {
-                // 模拟真实曲线：浓度 = 0.0008*x^2 + 0.011*x + 0.002
-                // 确保在抑制率40%时浓度≈0.03-0.05
                 return (0.0008 * x * x + 0.011 * x + 0.002).toFixed(3);
             }
         },
@@ -369,10 +376,9 @@
         }
     ];
 
-    // 存储当前推导结果
     let derivationResults = {};
 
-    // ---------- 初始化农药卡片 ----------
+    // 渲染农药卡片
     function renderPesticideCards() {
         const grid = document.getElementById('pesticideGrid');
         let html = '';
@@ -404,7 +410,7 @@
         grid.innerHTML = html;
     }
 
-    // ---------- 批量推导 ----------
+    // 批量推导
     function deriveAll() {
         const inhibition = parseFloat(document.getElementById('inhibitionRate').value) || 0;
         if (inhibition < 0 || inhibition > 100) {
@@ -420,7 +426,6 @@
             const isOver = conc >= p.limit;
             if (isOver) anyOverLimit = true;
             
-            // 更新卡片显示
             document.getElementById(`${p.name}-inh`).innerText = inhibition.toFixed(1) + '%';
             document.getElementById(`${p.name}-conc`).innerText = conc.toFixed(3) + ' ' + p.unit;
             
@@ -429,7 +434,6 @@
                 '<span class="pass-badge">合格</span>';
             document.getElementById(`${p.name}-judge`).innerHTML = judgeHtml;
             
-            // 存储结果
             derivationResults[p.name] = {
                 inhibition: inhibition,
                 concentration: conc,
@@ -440,26 +444,21 @@
             details.push(`${p.name}: ${conc.toFixed(3)}${p.unit} ${isOver ? '超标' : '合格'}`);
         });
 
-        // 更新判定区域
         updateJudgement(inhibition, anyOverLimit, details);
         updateQC();
     }
 
-    // ---------- 结果判定（完全按老师要求）----------
+    // 结果判定
     function updateJudgement(inhibition, anyOverLimit, details) {
-        const blankAc = parseFloat(document.getElementById('blankAc').value) || 0;
-        const sampleAs = parseFloat(document.getElementById('sampleAs').value) || 0;
-        const deltaAc = (blankAc - sampleAs).toFixed(3);
+        const deltaAc = parseFloat(document.getElementById('deltaAc').innerText) || 0;
         
         let judgement = '';
         let finalResult = '';
         
-        // 先判断酶活性
         if (deltaAc < 0.3) {
             judgement = '❌ 酶活性失效（ΔAc＜0.3），检测结果无效，需更换酶液重新检测';
             finalResult = '无效';
         } else {
-            // 判断抑制率和浓度
             if (inhibition >= 50 || anyOverLimit) {
                 judgement = '❌ 超标阳性样品：' + 
                     (inhibition >= 50 ? '抑制率≥50%' : '') + 
@@ -473,7 +472,6 @@
             }
         }
 
-        // 平行样偏差判断
         const inhParallel = parseFloat(document.getElementById('inhibitionRateParallel').value) || 0;
         const dev = Math.abs(inhibition - inhParallel);
         const devPercent = ((dev / ((inhibition + inhParallel)/2)) * 100).toFixed(1);
@@ -495,56 +493,63 @@
         `;
     }
 
-    // ---------- QC质控更新 ----------
+    // 更新QC
     function updateQC() {
-        const blankAc = parseFloat(document.getElementById('blankAc').value) || 0;
-        const sampleAs = parseFloat(document.getElementById('sampleAs').value) || 0;
-        const deltaAc = (blankAc - sampleAs).toFixed(3);
+        const acBefore = parseFloat(document.getElementById('blankAcBefore').value) || 0;
+        const acAfter = parseFloat(document.getElementById('blankAcAfter').value) || 0;
+        const deltaAc = (acAfter - acBefore).toFixed(3);
+        
+        document.getElementById('deltaAc').innerText = deltaAc;
+        document.getElementById('deltaAcStatus').innerText = deltaAc >= 0.3 ? ' (≥0.3，酶活性有效)' : ' (<0.3，酶活性失效)';
         
         const inh = parseFloat(document.getElementById('inhibitionRate').value) || 0;
         const inhPara = parseFloat(document.getElementById('inhibitionRateParallel').value) || 0;
         const avgInh = (inh + inhPara) / 2;
         const dev = avgInh === 0 ? 0 : (Math.abs(inh - inhPara) / avgInh * 100).toFixed(1);
         
-        // 模拟回收率 (80-120%)
-        const recovery = (95 + Math.random() * 10).toFixed(0);
-        
-        document.getElementById('deltaAc').innerText = deltaAc;
-        document.getElementById('deltaAcStatus').innerText = deltaAc >= 0.3 ? ' (≥0.3，酶活性有效)' : ' (<0.3，酶活性失效)';
-        
         document.getElementById('relativeDeviation').innerText = dev + '%';
         document.getElementById('deviationStatus').innerText = dev <= 10 ? ' (≤10%，有效)' : ' (>10%，无效)';
         
+        const recovery = (95 + Math.random() * 10).toFixed(0);
         document.getElementById('recoveryRate').innerText = recovery + '%';
         document.getElementById('recoveryStatus').innerText = (recovery >= 80 && recovery <= 120) ? ' (80%-120%，合格)' : ' (超出范围，不合格)';
     }
 
-    // ---------- 自动计算抑制率 ----------
+    // 国标抑制率计算
     document.getElementById('calcInhibition').addEventListener('click', function() {
-        const blank = parseFloat(document.getElementById('blankAc').value) || 0;
-        const sample = parseFloat(document.getElementById('sampleAs').value) || 0;
-        if (blank === 0) {
-            alert('空白吸光度不能为0');
+        const acBefore = parseFloat(document.getElementById('blankAcBefore').value) || 0;
+        const acAfter = parseFloat(document.getElementById('blankAcAfter').value) || 0;
+        const asBefore = parseFloat(document.getElementById('sampleAsBefore').value) || 0;
+        const asAfter = parseFloat(document.getElementById('sampleAsAfter').value) || 0;
+        
+        const deltaAc = acAfter - acBefore;
+        const deltaAs = asAfter - asBefore;
+        
+        if (deltaAc === 0) {
+            alert('对照组差值为0，无法计算抑制率');
             return;
         }
-        const inhibition = ((blank - sample) / blank * 100).toFixed(1);
+        
+        const inhibition = ((deltaAc - deltaAs) / deltaAc * 100).toFixed(1);
         document.getElementById('inhibitionRate').value = inhibition;
-        document.getElementById('dataSource').innerText = 'AI吸光度自动采集';
-        deriveAll(); // 自动推导
+        document.getElementById('dataSource').innerText = 'AI吸光度自动采集（国标公式）';
+        
+        updateQC();
+        deriveAll();
     });
 
     // 模拟扫码枪
     document.getElementById('scanSimulate').addEventListener('click', function() {
-        document.getElementById('blankAc').value = (0.820 + Math.random()*0.05).toFixed(3);
-        document.getElementById('sampleAs').value = (0.480 + Math.random()*0.05).toFixed(3);
+        document.getElementById('blankAcBefore').value = (0.820 + Math.random()*0.05).toFixed(3);
+        document.getElementById('blankAcAfter').value = (0.480 + Math.random()*0.05).toFixed(3);
+        document.getElementById('sampleAsBefore').value = (0.820 + Math.random()*0.05).toFixed(3);
+        document.getElementById('sampleAsAfter').value = (0.400 + Math.random()*0.05).toFixed(3);
         document.getElementById('dataSource').innerText = '扫码枪录入模式';
         document.getElementById('calcInhibition').click();
     });
 
-    // 批量推导
     document.getElementById('deriveAll').addEventListener('click', deriveAll);
     
-    // 重置
     document.getElementById('resetDerive').addEventListener('click', function() {
         pesticides.forEach(p => {
             document.getElementById(`${p.name}-inh`).innerText = '--';
@@ -554,7 +559,6 @@
         document.getElementById('judgementArea').innerHTML = '⏳ 点击“批量推导”后显示判定结果';
     });
 
-    // 浙农码调取信息
     document.getElementById('fetchTraceInfo').addEventListener('click', function() {
         const code = document.getElementById('zhejiangCode').value;
         const infoDiv = document.getElementById('traceInfo');
@@ -569,7 +573,6 @@
         `;
     });
 
-    // 生成报告
     document.getElementById('generateReport').addEventListener('click', function() {
         const reportDiv = document.getElementById('reportPreview');
         reportDiv.style.display = 'block';
@@ -622,29 +625,28 @@
         reportDiv.innerHTML = reportHtml;
     });
 
-    // 上传平台
     document.getElementById('uploadToPlatform').addEventListener('click', function() {
         alert('✅ 检测数据已同步上传至浙江省农产品质量安全追溯平台\n批次：' + document.getElementById('zhejiangCode').value);
     });
 
-    // 打印凭证
     document.getElementById('printLabel').addEventListener('click', function() {
         alert('🖨️ 打印溯源凭证：已生成标签，请连接打印机');
     });
 
-    // 输入变化时更新QC
-    document.getElementById('blankAc').addEventListener('input', updateQC);
-    document.getElementById('sampleAs').addEventListener('input', updateQC);
-    document.getElementById('inhibitionRate').addEventListener('input', updateQC);
-    document.getElementById('inhibitionRateParallel').addEventListener('input', updateQC);
+    // 输入变化更新QC
+    ['blankAcBefore','blankAcAfter','sampleAsBefore','sampleAsAfter','inhibitionRateParallel'].forEach(id => {
+        document.getElementById(id).addEventListener('input', updateQC);
+    });
 
     // 初始化
     renderPesticideCards();
     updateQC();
     
-    // 默认执行一次推导
+    // 默认执行一次计算
     window.onload = function() {
-        setTimeout(deriveAll, 500);
+        setTimeout(() => {
+            document.getElementById('calcInhibition').click();
+        }, 500);
     };
 </script>
 </body>
