@@ -225,7 +225,7 @@
         乙酰甲胺磷 | 氧乐果 | 甲胺磷 | 对硫磷 | 杀扑磷 | 丁硫克百威
     </div>
 
-    <!-- 1. 数据采集模块（修正为四吸光度，国标公式） -->
+    <!-- 1. 数据采集模块（修正默认值，抑制率为正） -->
     <div class="card">
         <div class="section-title">📡 1. 数据采集（国标法 ΔAc / ΔAs）</div>
         <div class="flex-row">
@@ -235,7 +235,7 @@
             </div>
             <div class="input-group">
                 <label>🧪 对照组 3分钟后吸光度</label>
-                <input type="number" id="blankAcAfter" step="0.001" value="0.510" placeholder="例：0.510">
+                <input type="number" id="blankAcAfter" step="0.001" value="0.340" placeholder="例：0.340">
             </div>
         </div>
         <div class="flex-row">
@@ -245,17 +245,17 @@
             </div>
             <div class="input-group">
                 <label>🌱 样品组 3分钟后吸光度</label>
-                <input type="number" id="sampleAsAfter" step="0.001" value="0.340" placeholder="例：0.340">
+                <input type="number" id="sampleAsAfter" step="0.001" value="0.510" placeholder="例：0.510">
             </div>
         </div>
         <div class="flex-row">
             <div class="input-group">
                 <label>📊 抑制率 (%) <span style="font-weight:normal; color:#4f6f55;">(自动计算)</span></label>
-                <input type="number" id="inhibitionRate" step="0.1" value="50.0" placeholder="抑制率" readonly style="background:#f0f7f0;">
+                <input type="number" id="inhibitionRate" step="0.1" value="33.3" placeholder="抑制率" readonly style="background:#f0f7f0;">
             </div>
             <div class="input-group">
                 <label>🧪 平行样抑制率 (%)</label>
-                <input type="number" id="inhibitionRateParallel" step="0.1" value="49.5">
+                <input type="number" id="inhibitionRateParallel" step="0.1" value="32.8">
             </div>
         </div>
         <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px;">
@@ -281,8 +281,8 @@
     <div class="card">
         <div class="section-title">✅ 3. 结果判定 & 质控</div>
         <div class="qc-status" id="qcStatus">
-            <div>🧪 对照组 ΔAc = <span id="deltaAc">0.340</span> <span id="deltaAcStatus">(≥0.3，酶活性有效)</span></div>
-            <div>📊 平行样相对偏差 = <span id="relativeDeviation">1.01%</span> <span id="deviationStatus">(≤10%，有效)</span></div>
+            <div>🧪 对照组 ΔAc = <span id="deltaAc">0.510</span> <span id="deltaAcStatus">(≥0.3，酶活性有效)</span></div>
+            <div>📊 平行样相对偏差 = <span id="relativeDeviation">1.51%</span> <span id="deviationStatus">(≤10%，有效)</span></div>
             <div>📈 阳性回收率 = <span id="recoveryRate">95%</span> <span id="recoveryStatus">(80%-120%，合格)</span></div>
         </div>
         <div id="judgementArea" style="margin-top: 20px; padding: 18px; background: #f0f0e0; border-radius: 20px;">
@@ -313,7 +313,7 @@
     </div>
 
     <div class="footer">
-        ⚖️ 符合 GB 23200.113-2026、GB 2763-2021 · 抑制率公式 (ΔAc-ΔAs)/ΔAc ×100% · 酶活性ΔAc＜0.3判无效
+        ⚖️ 符合 GB 23200.113-2026、GB 2763-2021 · 抑制率公式 (1 - ΔAs/ΔAc) ×100% · 酶活性ΔAc＜0.3判无效
     </div>
 </div>
 
@@ -497,7 +497,7 @@
     function updateQC() {
         const acBefore = parseFloat(document.getElementById('blankAcBefore').value) || 0;
         const acAfter = parseFloat(document.getElementById('blankAcAfter').value) || 0;
-        const deltaAc = (acAfter - acBefore).toFixed(3);
+        const deltaAc = (acBefore - acAfter).toFixed(3);
         
         document.getElementById('deltaAc').innerText = deltaAc;
         document.getElementById('deltaAcStatus').innerText = deltaAc >= 0.3 ? ' (≥0.3，酶活性有效)' : ' (<0.3，酶活性失效)';
@@ -515,22 +515,27 @@
         document.getElementById('recoveryStatus').innerText = (recovery >= 80 && recovery <= 120) ? ' (80%-120%，合格)' : ' (超出范围，不合格)';
     }
 
-    // 国标抑制率计算
+    // 国标抑制率计算（修正版）
     document.getElementById('calcInhibition').addEventListener('click', function() {
         const acBefore = parseFloat(document.getElementById('blankAcBefore').value) || 0;
         const acAfter = parseFloat(document.getElementById('blankAcAfter').value) || 0;
         const asBefore = parseFloat(document.getElementById('sampleAsBefore').value) || 0;
         const asAfter = parseFloat(document.getElementById('sampleAsAfter').value) || 0;
         
-        const deltaAc = acAfter - acBefore;
-        const deltaAs = asAfter - asBefore;
+        // 计算下降量（前-后）
+        const deltaAc = acBefore - acAfter;
+        const deltaAs = asBefore - asAfter;
         
-        if (deltaAc === 0) {
-            alert('对照组差值为0，无法计算抑制率');
+        if (deltaAc <= 0) {
+            alert('对照组吸光度未下降，酶可能失效');
             return;
         }
         
-        const inhibition = ((deltaAc - deltaAs) / deltaAc * 100).toFixed(1);
+        // 抑制率 = (1 - 样品下降量/对照下降量) × 100%
+        // 当样品下降量接近对照下降量时，抑制率接近0%
+        // 当样品下降量远小于对照下降量时，抑制率接近100%
+        const inhibition = ((1 - deltaAs / deltaAc) * 100).toFixed(1);
+        
         document.getElementById('inhibitionRate').value = inhibition;
         document.getElementById('dataSource').innerText = 'AI吸光度自动采集（国标公式）';
         
@@ -540,10 +545,11 @@
 
     // 模拟扫码枪
     document.getElementById('scanSimulate').addEventListener('click', function() {
-        document.getElementById('blankAcBefore').value = (0.820 + Math.random()*0.05).toFixed(3);
-        document.getElementById('blankAcAfter').value = (0.480 + Math.random()*0.05).toFixed(3);
-        document.getElementById('sampleAsBefore').value = (0.820 + Math.random()*0.05).toFixed(3);
-        document.getElementById('sampleAsAfter').value = (0.400 + Math.random()*0.05).toFixed(3);
+        // 生成合理数据：对照下降多，样品下降少
+        document.getElementById('blankAcBefore').value = (0.850 + Math.random()*0.05).toFixed(3);
+        document.getElementById('blankAcAfter').value = (0.320 + Math.random()*0.05).toFixed(3);
+        document.getElementById('sampleAsBefore').value = (0.850 + Math.random()*0.05).toFixed(3);
+        document.getElementById('sampleAsAfter').value = (0.520 + Math.random()*0.05).toFixed(3);
         document.getElementById('dataSource').innerText = '扫码枪录入模式';
         document.getElementById('calcInhibition').click();
     });
