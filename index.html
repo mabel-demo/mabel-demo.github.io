@@ -245,17 +245,17 @@
             </div>
             <div class="input-group">
                 <label>🌱 样品组 3分钟后吸光度</label>
-                <input type="number" id="sampleAsAfter" step="0.001" value="0.510" placeholder="例：0.510">
+                <input type="number" id="sampleAsAfter" step="0.001" value="0.380" placeholder="例：0.380">
             </div>
         </div>
         <div class="flex-row">
             <div class="input-group">
                 <label>📊 抑制率 (%) <span style="font-weight:normal; color:#4f6f55;">(自动计算)</span></label>
-                <input type="number" id="inhibitionRate" step="0.1" value="33.3" placeholder="抑制率" readonly style="background:#f0f7f0;">
+                <input type="number" id="inhibitionRate" step="0.1" value="7.8" placeholder="抑制率" readonly style="background:#f0f7f0;">
             </div>
             <div class="input-group">
                 <label>🧪 平行样抑制率 (%)</label>
-                <input type="number" id="inhibitionRateParallel" step="0.1" value="32.8">
+                <input type="number" id="inhibitionRateParallel" step="0.1" value="7.5">
             </div>
         </div>
         <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px;">
@@ -282,7 +282,7 @@
         <div class="section-title">✅ 3. 结果判定 & 质控</div>
         <div class="qc-status" id="qcStatus">
             <div>🧪 对照组 ΔAc = <span id="deltaAc">0.510</span> <span id="deltaAcStatus">(≥0.3，酶活性有效)</span></div>
-            <div>📊 平行样相对偏差 = <span id="relativeDeviation">1.51%</span> <span id="deviationStatus">(≤10%，有效)</span></div>
+            <div>📊 平行样相对偏差 = <span id="relativeDeviation">3.9%</span> <span id="deviationStatus">(≤10%，有效)</span></div>
             <div>📈 阳性回收率 = <span id="recoveryRate">95%</span> <span id="recoveryStatus">(80%-120%，合格)</span></div>
         </div>
         <div id="judgementArea" style="margin-top: 20px; padding: 18px; background: #f0f0e0; border-radius: 20px;">
@@ -318,60 +318,54 @@
 </div>
 
 <script>
-    // ---------- 农药数据库（完全按老师要求）---------
+    // ---------- 农药数据库（按国标限量，线性占位）---------
     const pesticides = [
         { 
             name: "乙酰甲胺磷", 
             limit: 0.05, 
             unit: "mg/kg", 
-            curve: "y = 0.023x² + 0.87x + 0.12",
             derive: function(x) {
-                return (0.0008 * x * x + 0.011 * x + 0.002).toFixed(3);
+                return (x * 0.001).toFixed(3);
             }
         },
         { 
             name: "氧乐果", 
             limit: 0.02, 
             unit: "mg/kg", 
-            curve: "y = 0.031x² + 0.92x + 0.08",
             derive: function(x) {
-                return (0.0006 * x * x + 0.009 * x + 0.0015).toFixed(3);
+                return (x * 0.0008).toFixed(3);
             }
         },
         { 
             name: "甲胺磷", 
             limit: 0.05, 
             unit: "mg/kg", 
-            curve: "y = 0.019x² + 0.79x + 0.15",
             derive: function(x) {
-                return (0.0007 * x * x + 0.010 * x + 0.0022).toFixed(3);
+                return (x * 0.001).toFixed(3);
             }
         },
         { 
             name: "对硫磷", 
             limit: 0.05, 
             unit: "mg/kg", 
-            curve: "y = 0.027x² + 0.88x + 0.10",
             derive: function(x) {
-                return (0.00075 * x * x + 0.0105 * x + 0.0018).toFixed(3);
+                return (x * 0.001).toFixed(3);
             }
         },
         { 
             name: "杀扑磷", 
             limit: 0.01, 
             unit: "mg/kg", 
-            curve: "y = 0.022x² + 0.76x + 0.09",
             derive: function(x) {
-                return (0.0005 * x * x + 0.008 * x + 0.001).toFixed(3);
+                return (x * 0.0009).toFixed(3);
             }
         },
         { 
             name: "丁硫克百威", 
             limit: 0.01, 
             unit: "mg/kg", 
-            curve: "y = 0.018x² + 0.69x + 0.11",
             derive: function(x) {
-                return (0.00055 * x * x + 0.0075 * x + 0.0012).toFixed(3);
+                return (x * 0.0012).toFixed(3);
             }
         }
     ];
@@ -400,9 +394,6 @@
                     <div class="pesticide-row">
                         <span>⚖️ 判定</span>
                         <span id="${p.name}-judge">--</span>
-                    </div>
-                    <div style="font-size: 12px; color: #5f7e5f; margin-top: 10px;">
-                        ${p.curve}
                     </div>
                 </div>
             `;
@@ -522,7 +513,6 @@
         const asBefore = parseFloat(document.getElementById('sampleAsBefore').value) || 0;
         const asAfter = parseFloat(document.getElementById('sampleAsAfter').value) || 0;
         
-        // 计算下降量（前-后）
         const deltaAc = acBefore - acAfter;
         const deltaAs = asBefore - asAfter;
         
@@ -531,9 +521,6 @@
             return;
         }
         
-        // 抑制率 = (1 - 样品下降量/对照下降量) × 100%
-        // 当样品下降量接近对照下降量时，抑制率接近0%
-        // 当样品下降量远小于对照下降量时，抑制率接近100%
         const inhibition = ((1 - deltaAs / deltaAc) * 100).toFixed(1);
         
         document.getElementById('inhibitionRate').value = inhibition;
@@ -545,7 +532,6 @@
 
     // 模拟扫码枪
     document.getElementById('scanSimulate').addEventListener('click', function() {
-        // 生成合理数据：对照下降多，样品下降少
         document.getElementById('blankAcBefore').value = (0.850 + Math.random()*0.05).toFixed(3);
         document.getElementById('blankAcAfter').value = (0.320 + Math.random()*0.05).toFixed(3);
         document.getElementById('sampleAsBefore').value = (0.850 + Math.random()*0.05).toFixed(3);
