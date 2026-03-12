@@ -212,6 +212,12 @@
             border-top: 1px solid #deecde;
             padding-top: 24px;
         }
+        .scan-section {
+            background: #e8f3e8;
+            border-radius: 24px;
+            padding: 18px;
+            margin-bottom: 16px;
+        }
     </style>
 </head>
 <body>
@@ -225,7 +231,7 @@
         乙酰甲胺磷 | 氧乐果 | 甲胺磷 | 对硫磷 | 杀扑磷 | 丁硫克百威
     </div>
 
-    <!-- 1. 数据采集模块（修正默认值，抑制率为正） -->
+    <!-- 1. 数据采集模块 -->
     <div class="card">
         <div class="section-title">📡 1. 数据采集（国标法 ΔAc / ΔAs）</div>
         <div class="flex-row">
@@ -267,7 +273,7 @@
         </div>
     </div>
 
-    <!-- 2. 农药浓度推导卡片（动态生成） -->
+    <!-- 2. 农药浓度推导卡片 -->
     <div class="card">
         <div class="section-title">🧪 2. 多农药同步推导（内置6种农药）</div>
         <div class="pesticide-grid" id="pesticideGrid"></div>
@@ -290,19 +296,38 @@
         </div>
     </div>
 
-    <!-- 4. 浙农码溯源 + 报告生成 -->
+    <!-- 4. 浙农码溯源关联 + 扫码枪模块 -->
     <div class="card">
-        <div class="section-title">🔗 4. 浙农码溯源关联</div>
-        <div class="trace-link">
+        <div class="section-title">🔗 4. 浙农码溯源关联（支持扫码枪）</div>
+        
+        <!-- 扫码枪输入区 -->
+        <div class="scan-section">
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                <div style="flex: 1;">
+                    <label>📷 扫码枪输入（自动聚焦）</label>
+                    <input type="text" id="scanInput" placeholder="请用扫码枪扫描浙农码..." value="" autofocus style="width: 100%;">
+                </div>
+                <button id="manualFetchBtn" style="margin-top: 22px;">🔍 调取信息</button>
+            </div>
+            <div style="font-size: 13px; color: #2d6b4d; background: #dff0df; padding: 8px 14px; border-radius: 30px;">
+                ⚡ 光标已自动聚焦，扫码枪扫描后自动填入并按回车查询
+            </div>
+        </div>
+
+        <!-- 原有的下拉选择（备用） -->
+        <div class="trace-link" style="margin-top: 10px;">
             <select id="zhejiangCode" style="flex:2; padding: 14px;">
                 <option value="ZN20260307-001">ZN20260307-001 · 豇豆 · 金华基地 · 2026-03-07</option>
                 <option value="ZN20260307-002">ZN20260307-002 · 豇豆 · 衢州基地 · 2026-03-07</option>
                 <option value="ZN20260307-003">ZN20260307-003 · 豇豆 · 温州基地 · 2026-03-07</option>
             </select>
-            <button id="fetchTraceInfo">📲 调取浙农码信息</button>
+            <button id="fetchTraceInfo">📲 调取浙农码信息（下拉）</button>
         </div>
+
+        <!-- 浙农码信息显示区 -->
         <div id="traceInfo" style="background:#f5f5e8; padding:18px; border-radius:20px; margin:16px 0; display:none;"></div>
         
+        <!-- 报告生成按钮 -->
         <div style="display: flex; gap: 15px; flex-wrap: wrap; margin: 20px 0;">
             <button id="generateReport">📄 生成标准化报告</button>
             <button id="uploadToPlatform">⬆️ 上传至浙江追溯平台</button>
@@ -506,7 +531,7 @@
         document.getElementById('recoveryStatus').innerText = (recovery >= 80 && recovery <= 120) ? ' (80%-120%，合格)' : ' (超出范围，不合格)';
     }
 
-    // 国标抑制率计算（修正版）
+    // 国标抑制率计算
     document.getElementById('calcInhibition').addEventListener('click', function() {
         const acBefore = parseFloat(document.getElementById('blankAcBefore').value) || 0;
         const acAfter = parseFloat(document.getElementById('blankAcAfter').value) || 0;
@@ -530,7 +555,7 @@
         deriveAll();
     });
 
-    // 模拟扫码枪
+    // 模拟扫码枪（用于测试）
     document.getElementById('scanSimulate').addEventListener('click', function() {
         document.getElementById('blankAcBefore').value = (0.850 + Math.random()*0.05).toFixed(3);
         document.getElementById('blankAcAfter').value = (0.320 + Math.random()*0.05).toFixed(3);
@@ -551,8 +576,8 @@
         document.getElementById('judgementArea').innerHTML = '⏳ 点击“批量推导”后显示判定结果';
     });
 
-    document.getElementById('fetchTraceInfo').addEventListener('click', function() {
-        const code = document.getElementById('zhejiangCode').value;
+    // 浙农码信息显示函数（供扫码枪和下拉按钮共用）
+    function displayTraceInfo(code) {
         const infoDiv = document.getElementById('traceInfo');
         infoDiv.style.display = 'block';
         infoDiv.innerHTML = `
@@ -563,7 +588,51 @@
             <div>⏱ 采收时间：2026-03-07</div>
             <div>🔗 检测状态：<span style="color:#1e6b1e;">已关联</span></div>
         `;
+    }
+
+    // 下拉框调取信息
+    document.getElementById('fetchTraceInfo').addEventListener('click', function() {
+        const code = document.getElementById('zhejiangCode').value;
+        displayTraceInfo(code);
     });
+
+    // 扫码枪输入监听（自动查询）
+    document.getElementById('scanInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            const code = this.value.trim();
+            if (code) {
+                displayTraceInfo(code);
+                // 可选：同步下拉框
+                const select = document.getElementById('zhejiangCode');
+                for(let i = 0; i < select.options.length; i++) {
+                    if(select.options[i].value === code) {
+                        select.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+    });
+
+    // 手动查询按钮（扫码枪输入框旁边的）
+    document.getElementById('manualFetchBtn').addEventListener('click', function() {
+        const code = document.getElementById('scanInput').value.trim();
+        if(code) {
+            displayTraceInfo(code);
+        } else {
+            alert('请先扫描或输入浙农码');
+        }
+    });
+
+    // 确保扫码输入框自动获得焦点
+    window.onload = function() {
+        document.getElementById('scanInput').focus();
+        renderPesticideCards();
+        updateQC();
+        setTimeout(() => {
+            document.getElementById('calcInhibition').click();
+        }, 500);
+    };
 
     document.getElementById('generateReport').addEventListener('click', function() {
         const reportDiv = document.getElementById('reportPreview');
@@ -629,17 +698,6 @@
     ['blankAcBefore','blankAcAfter','sampleAsBefore','sampleAsAfter','inhibitionRateParallel'].forEach(id => {
         document.getElementById(id).addEventListener('input', updateQC);
     });
-
-    // 初始化
-    renderPesticideCards();
-    updateQC();
-    
-    // 默认执行一次计算
-    window.onload = function() {
-        setTimeout(() => {
-            document.getElementById('calcInhibition').click();
-        }, 500);
-    };
 </script>
 </body>
 </html>
