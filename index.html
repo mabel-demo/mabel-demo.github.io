@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>豇豆农残·手机专业版</title>
+    <title>豇豆农残·双模式版</title>
     <style>
         * {
             box-sizing: border-box;
@@ -19,7 +18,6 @@
             flex-direction: column;
             overflow: hidden;
         }
-        /* 顶部标题栏 */
         .app-header {
             background: #1d6b3c;
             color: white;
@@ -38,7 +36,6 @@
             padding: 4px 12px;
             border-radius: 30px;
         }
-        /* 主要内容区域 - 滑动容器 */
         .main-content {
             flex: 1;
             overflow: hidden;
@@ -58,7 +55,6 @@
             padding: 16px 16px 8px 16px;
             -webkit-overflow-scrolling: touch;
         }
-        /* 卡片样式 - 手机优化版 */
         .card {
             background: white;
             border-radius: 24px;
@@ -78,7 +74,6 @@
             border-left: 5px solid #2e8b57;
             padding-left: 12px;
         }
-        /* 输入组 - 手机优化 */
         .input-row {
             display: flex;
             gap: 10px;
@@ -125,11 +120,6 @@
         button.secondary {
             background: #5f7e5f;
         }
-        button.small {
-            padding: 8px 16px;
-            font-size: 13px;
-        }
-        /* 农药卡片网格 */
         .pesticide-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -177,7 +167,6 @@
             background: #ffe6e6;
             color: #c23b2b;
         }
-        /* 结果区域 */
         .judgement-box {
             background: #f0f9ee;
             border-radius: 20px;
@@ -192,7 +181,6 @@
             margin: 16px 0;
             font-size: 14px;
         }
-        /* 报告区域 - 带滚动 */
         .report-box {
             background: #fcf9f0;
             border-radius: 20px;
@@ -216,7 +204,6 @@
             padding: 8px;
             border-bottom: 1px solid #ddd;
         }
-        /* 底部导航 */
         .bottom-nav {
             background: white;
             border-top: 1px solid #e0f0e0;
@@ -242,30 +229,36 @@
             font-size: 20px;
             margin-bottom: 2px;
         }
-        /* 扫码输入区 */
         .scan-area {
             background: #e8f3e8;
             border-radius: 20px;
             padding: 16px;
             margin-bottom: 16px;
         }
+        .mode-tag {
+            background: #e0f0e0;
+            color: #1d6b3c;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
     </style>
 </head>
 <body>
-    <!-- 顶部标题 -->
     <div class="app-header">
-        <span>🌾 豇豆农残</span>
-        <span>V2.0</span>
+        <span>🌾 豇豆农残·双模式</span>
+        <span>V3.0</span>
     </div>
 
-    <!-- 主内容滑动区 -->
     <div class="main-content" id="mainContent">
         <div class="pages-container" id="pagesContainer">
-            <!-- 第一页：数据采集+农残推导 -->
+            <!-- 第1页：科研模式（吸光度） -->
             <div class="page" id="page1">
-                <!-- 数据采集卡片 -->
+                <div class="mode-tag">📊 科研模式 · 四吸光度</div>
                 <div class="card">
-                    <div class="card-title">📡 1. 吸光度采集</div>
+                    <div class="card-title">📡 吸光度采集</div>
                     <div class="input-row">
                         <div class="input-group">
                             <label>🧪 对照前</label>
@@ -296,89 +289,97 @@
                             <input type="number" id="inhibitionRateParallel" step="0.1" value="7.5">
                         </div>
                     </div>
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <button id="calcInhibition">计算抑制率</button>
-                        <button class="secondary" id="scanSimulate">模拟扫码</button>
-                    </div>
+                    <button id="calcInhibition">计算抑制率</button>
                 </div>
 
-                <!-- 农药推导卡片 -->
                 <div class="card">
-                    <div class="card-title">🧪 2. 农残推导</div>
-                    <div class="pesticide-grid" id="pesticideGrid"></div>
-                    <div style="display: flex; gap: 8px;">
-                        <button id="deriveAll" style="flex:1;">批量推导</button>
-                        <button id="resetDerive" class="secondary" style="flex:1;">重置</button>
-                    </div>
-                </div>
-
-                <!-- 结果判定卡片 -->
-                <div class="card">
-                    <div class="card-title">✅ 3. 结果判定</div>
-                    <div class="qc-status" id="qcStatus"></div>
-                    <div id="judgementArea" style="font-size:14px;"></div>
+                    <div class="card-title">🧪 农残推导</div>
+                    <div class="pesticide-grid" id="pesticideGrid1"></div>
+                    <button id="deriveAll1">批量推导</button>
                 </div>
             </div>
 
-            <!-- 第二页：浙农码+报告 -->
+            <!-- 第2页：快检模式（直接填抑制率） -->
             <div class="page" id="page2">
-                <!-- 扫码枪卡片 -->
+                <div class="mode-tag">⚡ 快检模式 · 直输抑制率</div>
                 <div class="card">
-                    <div class="card-title">🔗 浙农码关联</div>
+                    <div class="card-title">📊 仪器抑制率输入</div>
+                    <div class="input-group" style="margin-bottom: 16px;">
+                        <label>🎯 抑制率 (%)</label>
+                        <input type="number" id="quickInhibition" step="0.1" value="25.0" placeholder="输入仪器测出的抑制率">
+                    </div>
+                    <div class="input-group">
+                        <label>平行样 (%)</label>
+                        <input type="number" id="quickParallel" step="0.1" value="24.5">
+                    </div>
+                    <button id="quickDerive" style="margin-top: 16px;">⚡ 一键推导</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">🧪 农残结果</div>
+                    <div class="pesticide-grid" id="pesticideGrid2"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">✅ 快检判定</div>
+                    <div id="quickJudgement" style="padding: 16px; background: #f0f9ee; border-radius: 20px;">
+                        点击“一键推导”查看结果
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第3页：浙农码+报告 -->
+            <div class="page" id="page3">
+                <div class="mode-tag">🔗 浙农码溯源</div>
+                <div class="card">
+                    <div class="card-title">扫码枪连接</div>
                     <div class="scan-area">
                         <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-                            <input type="text" id="scanInput" placeholder="扫码或输入浙农码" value="" style="flex:2;" autofocus>
-                            <button id="manualFetchBtn" class="small" style="flex:1;">查询</button>
+                            <input type="text" id="scanInput" placeholder="扫码或输入浙农码" value="" style="flex:2;">
+                            <button id="manualFetchBtn" class="secondary" style="flex:1;">查询</button>
                         </div>
-                        <div style="font-size:12px; color:#2d6b4d; background:#dff0df; padding:8px; border-radius:20px; text-align:center;">
-                            光标已聚焦，扫码枪扫描后自动查询
+                        <div style="font-size:12px; color:#2d6b4d; background:#dff0df; padding:8px; border-radius:20px;">
+                            蓝牙扫码枪连接后自动填入
                         </div>
                     </div>
-                    
-                    <!-- 备用下拉 -->
                     <select id="zhejiangCode" style="width:100%; padding:12px; margin-bottom:12px;">
                         <option value="ZN20260307-001">ZN20260307-001 · 金华基地</option>
                         <option value="ZN20260307-002">ZN20260307-002 · 衢州基地</option>
                         <option value="ZN20260307-003">ZN20260307-003 · 温州基地</option>
                     </select>
-                    
-                    <div style="display: flex; gap: 8px; margin-bottom:12px;">
-                        <button id="fetchTraceInfo" style="flex:1;">调取信息</button>
-                    </div>
-
-                    <!-- 浙农码信息 -->
-                    <div id="traceInfo" style="background:#f5f5e8; padding:14px; border-radius:16px; margin:12px 0; display:none; font-size:14px;"></div>
+                    <button id="fetchTraceInfo">调取浙农码信息</button>
+                    <div id="traceInfo" style="background:#f5f5e8; padding:14px; border-radius:16px; margin:12px 0; display:none;"></div>
                 </div>
 
-                <!-- 报告生成卡片 -->
                 <div class="card">
-                    <div class="card-title">📄 标准化报告</div>
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom:12px;">
+                    <div class="card-title">📄 报告生成</div>
+                    <div style="display: flex; gap: 8px; margin-bottom:12px;">
                         <button id="generateReport" style="flex:1;">生成报告</button>
                         <button id="uploadToPlatform" class="secondary" style="flex:1;">上传平台</button>
-                        <button id="printLabel" class="secondary" style="flex:1;">打印凭证</button>
                     </div>
-                    <!-- 报告预览（带滚动） -->
                     <div id="reportPreview" class="report-box" style="display:none;"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 底部导航 -->
     <div class="bottom-nav">
         <div class="nav-item active" id="navPage1" onclick="switchPage(0)">
             <span>📊</span>
-            <span>数据采集</span>
+            <span>科研</span>
         </div>
         <div class="nav-item" id="navPage2" onclick="switchPage(1)">
+            <span>⚡</span>
+            <span>快检</span>
+        </div>
+        <div class="nav-item" id="navPage3" onclick="switchPage(2)">
             <span>🔗</span>
             <span>浙农码</span>
         </div>
     </div>
 
     <script>
-        // 农药数据库
+        // 农药数据库（共用）
         const pesticides = [
             { name: "乙酰甲胺磷", limit: 0.05, unit: "mg/kg", derive: x => (x * 0.001).toFixed(3) },
             { name: "氧乐果", limit: 0.02, unit: "mg/kg", derive: x => (x * 0.0008).toFixed(3) },
@@ -387,14 +388,20 @@
             { name: "杀扑磷", limit: 0.01, unit: "mg/kg", derive: x => (x * 0.0009).toFixed(3) },
             { name: "丁硫克百威", limit: 0.01, unit: "mg/kg", derive: x => (x * 0.0012).toFixed(3) }
         ];
-        let derivationResults = {};
 
-        // 渲染农药卡片
-        function renderPesticideCards() {
-            const grid = document.getElementById('pesticideGrid');
-            let html = '';
+        // 当前结果存储
+        let currentResults = {};
+
+        // 渲染两个页面的农药卡片
+        function renderAllCards() {
+            // 页面1
+            let html1 = '';
+            // 页面2
+            let html2 = '';
+            
             pesticides.forEach(p => {
-                html += `
+                // 页面1卡片
+                html1 += `
                     <div class="pesticide-card">
                         <div class="pesticide-name">
                             ${p.name}
@@ -402,60 +409,95 @@
                         </div>
                         <div class="pesticide-row">
                             <span>抑制率</span>
-                            <span id="${p.name}-inh">--</span>
+                            <span id="p1-${p.name}-inh">--</span>
                         </div>
                         <div class="pesticide-row">
                             <span>浓度</span>
-                            <span id="${p.name}-conc">--</span>
+                            <span id="p1-${p.name}-conc">--</span>
                         </div>
                         <div class="pesticide-row">
                             <span>判定</span>
-                            <span id="${p.name}-judge">--</span>
+                            <span id="p1-${p.name}-judge">--</span>
+                        </div>
+                    </div>
+                `;
+                
+                // 页面2卡片
+                html2 += `
+                    <div class="pesticide-card">
+                        <div class="pesticide-name">
+                            ${p.name}
+                            <span class="limit-badge">限${p.limit}</span>
+                        </div>
+                        <div class="pesticide-row">
+                            <span>抑制率</span>
+                            <span id="p2-${p.name}-inh">--</span>
+                        </div>
+                        <div class="pesticide-row">
+                            <span>浓度</span>
+                            <span id="p2-${p.name}-conc">--</span>
+                        </div>
+                        <div class="pesticide-row">
+                            <span>判定</span>
+                            <span id="p2-${p.name}-judge">--</span>
                         </div>
                     </div>
                 `;
             });
-            grid.innerHTML = html;
+            
+            document.getElementById('pesticideGrid1').innerHTML = html1;
+            document.getElementById('pesticideGrid2').innerHTML = html2;
         }
 
-        // 切换页面
+        // 更新页面1的结果
+        function updatePage1(inh) {
+            let anyOver = false;
+            pesticides.forEach(p => {
+                const conc = parseFloat(p.derive(inh));
+                const over = conc >= p.limit;
+                if(over) anyOver = true;
+                document.getElementById(`p1-${p.name}-inh`).innerText = inh.toFixed(1) + '%';
+                document.getElementById(`p1-${p.name}-conc`).innerText = conc.toFixed(3);
+                document.getElementById(`p1-${p.name}-judge`).innerHTML = over ? '<span class="fail-badge">超标</span>' : '<span class="pass-badge">合格</span>';
+                currentResults[p.name] = { conc, over };
+            });
+        }
+
+        // 更新页面2的结果
+        function updatePage2(inh) {
+            let anyOver = false;
+            pesticides.forEach(p => {
+                const conc = parseFloat(p.derive(inh));
+                const over = conc >= p.limit;
+                if(over) anyOver = true;
+                document.getElementById(`p2-${p.name}-inh`).innerText = inh.toFixed(1) + '%';
+                document.getElementById(`p2-${p.name}-conc`).innerText = conc.toFixed(3);
+                document.getElementById(`p2-${p.name}-judge`).innerHTML = over ? '<span class="fail-badge">超标</span>' : '<span class="pass-badge">合格</span>';
+            });
+            
+            // 更新快检判定
+            let judgement = '';
+            if(inh >= 50 || anyOver) {
+                judgement = '❌ 超标阳性样品';
+            } else {
+                judgement = '✅ 合格样品';
+            }
+            document.getElementById('quickJudgement').innerHTML = `
+                <div style="font-weight:700; font-size:16px; margin-bottom:8px;">${judgement}</div>
+                <div style="font-size:13px; color:#4f6f55;">抑制率: ${inh.toFixed(1)}%</div>
+            `;
+        }
+
+        // 页面切换
         window.switchPage = function(index) {
             const container = document.getElementById('pagesContainer');
             container.style.transform = `translateX(-${index * 100}%)`;
-            
-            // 更新导航激活状态
             document.getElementById('navPage1').classList.toggle('active', index === 0);
             document.getElementById('navPage2').classList.toggle('active', index === 1);
-            
-            // 第二页时自动聚焦扫码输入框
-            if(index === 1) {
-                setTimeout(() => document.getElementById('scanInput').focus(), 100);
-            }
+            document.getElementById('navPage3').classList.toggle('active', index === 2);
         };
 
-        // 触摸滑动支持
-        let startX = 0;
-        let currentPage = 0;
-        document.getElementById('mainContent').addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
-        });
-        document.getElementById('mainContent').addEventListener('touchend', (e) => {
-            if(!startX) return;
-            let endX = e.changedTouches[0].clientX;
-            let diff = endX - startX;
-            if(Math.abs(diff) > 50) {
-                if(diff > 0 && currentPage > 0) {
-                    currentPage--;
-                    switchPage(currentPage);
-                } else if(diff < 0 && currentPage < 1) {
-                    currentPage++;
-                    switchPage(currentPage);
-                }
-            }
-            startX = 0;
-        });
-
-        // 抑制率计算
+        // 科研模式计算
         document.getElementById('calcInhibition').addEventListener('click', function() {
             const acBefore = parseFloat(document.getElementById('blankAcBefore').value) || 0;
             const acAfter = parseFloat(document.getElementById('blankAcAfter').value) || 0;
@@ -464,55 +506,23 @@
             const deltaAc = acBefore - acAfter;
             const deltaAs = asBefore - asAfter;
             if(deltaAc <= 0) { alert('酶可能失效'); return; }
-            const inhibition = ((1 - deltaAs/deltaAc) * 100).toFixed(1);
-            document.getElementById('inhibitionRate').value = inhibition;
-            deriveAll();
+            const inh = ((1 - deltaAs/deltaAc) * 100);
+            document.getElementById('inhibitionRate').value = inh.toFixed(1);
+            updatePage1(inh);
         });
 
-        // 批量推导
-        function deriveAll() {
+        document.getElementById('deriveAll1').addEventListener('click', function() {
             const inh = parseFloat(document.getElementById('inhibitionRate').value) || 0;
-            let anyOver = false, details = [];
-            pesticides.forEach(p => {
-                const conc = parseFloat(p.derive(inh));
-                const over = conc >= p.limit;
-                if(over) anyOver = true;
-                document.getElementById(`${p.name}-inh`).innerText = inh.toFixed(1) + '%';
-                document.getElementById(`${p.name}-conc`).innerText = conc.toFixed(3);
-                document.getElementById(`${p.name}-judge`).innerHTML = over ? '<span class="fail-badge">超标</span>' : '<span class="pass-badge">合格</span>';
-                derivationResults[p.name] = { concentration: conc, isOver: over };
-                details.push(`${p.name}: ${conc.toFixed(3)}${over?'超标':'合格'}`);
-            });
-            // 更新判定
-            const deltaAc = parseFloat(document.getElementById('deltaAc')?.innerText || 0.5);
-            let judgement = '';
-            if(deltaAc < 0.3) judgement = '❌ 酶失效';
-            else if(inh >= 50 || anyOver) judgement = '❌ 超标';
-            else judgement = '✅ 合格';
-            document.getElementById('judgementArea').innerHTML = `
-                <div style="font-weight:700; margin-bottom:8px;">${judgement}</div>
-                <div style="font-size:12px; color:#4f6f55;">${details.slice(0,3).join('<br>')}${details.length>3?'...':''}</div>
-            `;
-        }
-        document.getElementById('deriveAll').addEventListener('click', deriveAll);
-        document.getElementById('resetDerive').addEventListener('click', () => {
-            pesticides.forEach(p => {
-                document.getElementById(`${p.name}-inh`).innerText = '--';
-                document.getElementById(`${p.name}-conc`).innerText = '--';
-                document.getElementById(`${p.name}-judge`).innerHTML = '--';
-            });
+            updatePage1(inh);
         });
 
-        // 模拟扫码
-        document.getElementById('scanSimulate').addEventListener('click', function() {
-            document.getElementById('blankAcBefore').value = (0.85 + Math.random()*0.05).toFixed(3);
-            document.getElementById('blankAcAfter').value = (0.32 + Math.random()*0.05).toFixed(3);
-            document.getElementById('sampleAsBefore').value = (0.85 + Math.random()*0.05).toFixed(3);
-            document.getElementById('sampleAsAfter').value = (0.52 + Math.random()*0.05).toFixed(3);
-            document.getElementById('calcInhibition').click();
+        // 快检模式
+        document.getElementById('quickDerive').addEventListener('click', function() {
+            const inh = parseFloat(document.getElementById('quickInhibition').value) || 0;
+            updatePage2(inh);
         });
 
-        // 浙农码
+        // 浙农码功能
         function displayTraceInfo(code) {
             const div = document.getElementById('traceInfo');
             div.style.display = 'block';
@@ -530,35 +540,23 @@
             div.style.display = 'block';
             let html = '<table class="report-table"><tr><th>农药</th><th>浓度</th><th>判定</th></tr>';
             pesticides.forEach(p => {
-                let conc = derivationResults[p.name]?.concentration || '--';
-                let isOver = derivationResults[p.name]?.isOver;
-                html += `<tr><td>${p.name}</td><td>${conc}</td><td style="color:${isOver?'#c23b2b':'#1e6b1e'};">${isOver?'超标':'合格'}</td></tr>`;
+                const res = currentResults[p.name] || { conc: '--', over: false };
+                html += `<tr><td>${p.name}</td><td>${res.conc}</td><td style="color:${res.over?'#c23b2b':'#1e6b1e'};">${res.over?'超标':'合格'}</td></tr>`;
             });
             html += '</table><div style="margin-top:10px;">🔏 报告编号: ZN'+Date.now()+'</div>';
             div.innerHTML = html;
         });
 
         document.getElementById('uploadToPlatform').addEventListener('click', () => alert('已上传至浙江追溯平台'));
-        document.getElementById('printLabel').addEventListener('click', () => alert('打印溯源凭证'));
-
-        // 更新QC
-        function updateQC() {
-            const acBefore = parseFloat(document.getElementById('blankAcBefore').value) || 0;
-            const acAfter = parseFloat(document.getElementById('blankAcAfter').value) || 0;
-            const deltaAc = (acBefore - acAfter).toFixed(3);
-            document.getElementById('qcStatus').innerHTML = `
-                <div>🧪 ΔAc = ${deltaAc} ${deltaAc>=0.3?'✅有效':'❌失效'}</div>
-                <div>📊 回收率: 95% ✅</div>
-            `;
-        }
-        ['blankAcBefore','blankAcAfter','sampleAsBefore','sampleAsAfter'].forEach(id => 
-            document.getElementById(id).addEventListener('input', updateQC)
-        );
 
         // 初始化
-        renderPesticideCards();
-        updateQC();
-        setTimeout(() => document.getElementById('calcInhibition').click(), 500);
+        renderAllCards();
+        // 默认执行一次科研模式
+        setTimeout(() => {
+            document.getElementById('calcInhibition').click();
+            // 快检默认也给个示例
+            document.getElementById('quickDerive').click();
+        }, 300);
     </script>
 </body>
 </html>
