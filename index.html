@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>豇豆农残·双模式版</title>
+    <title>豇豆农残·双模式同步版</title>
     <style>
         * {
             box-sizing: border-box;
@@ -244,19 +244,30 @@
             display: inline-block;
             margin-bottom: 12px;
         }
+        .sync-badge {
+            background: #ffe8b0;
+            color: #8a6d2b;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            margin-left: 8px;
+        }
     </style>
 </head>
 <body>
     <div class="app-header">
-        <span>🌾 豇豆农残·双模式</span>
-        <span>V3.0</span>
+        <span>🌾 豇豆农残·同步版</span>
+        <span>V3.1</span>
     </div>
 
     <div class="main-content" id="mainContent">
         <div class="pages-container" id="pagesContainer">
             <!-- 第1页：科研模式（吸光度） -->
             <div class="page" id="page1">
-                <div class="mode-tag">📊 科研模式 · 四吸光度</div>
+                <div class="mode-tag">
+                    📊 科研模式 · 四吸光度
+                    <span class="sync-badge" id="syncBadge1">最新</span>
+                </div>
                 <div class="card">
                     <div class="card-title">📡 吸光度采集</div>
                     <div class="input-row">
@@ -289,19 +300,21 @@
                             <input type="number" id="inhibitionRateParallel" step="0.1" value="7.5">
                         </div>
                     </div>
-                    <button id="calcInhibition">计算抑制率</button>
+                    <button id="calcInhibition">🧪 计算抑制率</button>
                 </div>
 
                 <div class="card">
                     <div class="card-title">🧪 农残推导</div>
                     <div class="pesticide-grid" id="pesticideGrid1"></div>
-                    <button id="deriveAll1">批量推导</button>
                 </div>
             </div>
 
             <!-- 第2页：快检模式（直接填抑制率） -->
             <div class="page" id="page2">
-                <div class="mode-tag">⚡ 快检模式 · 直输抑制率</div>
+                <div class="mode-tag">
+                    ⚡ 快检模式 · 直输抑制率
+                    <span class="sync-badge" id="syncBadge2">最新</span>
+                </div>
                 <div class="card">
                     <div class="card-title">📊 仪器抑制率输入</div>
                     <div class="input-group" style="margin-bottom: 16px;">
@@ -312,19 +325,12 @@
                         <label>平行样 (%)</label>
                         <input type="number" id="quickParallel" step="0.1" value="24.5">
                     </div>
-                    <button id="quickDerive" style="margin-top: 16px;">⚡ 一键推导</button>
+                    <button id="quickDerive">⚡ 一键推导</button>
                 </div>
 
                 <div class="card">
                     <div class="card-title">🧪 农残结果</div>
                     <div class="pesticide-grid" id="pesticideGrid2"></div>
-                </div>
-
-                <div class="card">
-                    <div class="card-title">✅ 快检判定</div>
-                    <div id="quickJudgement" style="padding: 16px; background: #f0f9ee; border-radius: 20px;">
-                        点击“一键推导”查看结果
-                    </div>
                 </div>
             </div>
 
@@ -354,8 +360,8 @@
                 <div class="card">
                     <div class="card-title">📄 报告生成</div>
                     <div style="display: flex; gap: 8px; margin-bottom:12px;">
-                        <button id="generateReport" style="flex:1;">生成报告</button>
-                        <button id="uploadToPlatform" class="secondary" style="flex:1;">上传平台</button>
+                        <button id="generateReport" style="flex:1;">📄 生成报告</button>
+                        <button id="uploadToPlatform" class="secondary" style="flex:1;">⬆️ 上传平台</button>
                     </div>
                     <div id="reportPreview" class="report-box" style="display:none;"></div>
                 </div>
@@ -379,7 +385,7 @@
     </div>
 
     <script>
-        // 农药数据库（共用）
+        // ---------- 农药数据库（共用）----------
         const pesticides = [
             { name: "乙酰甲胺磷", limit: 0.05, unit: "mg/kg", derive: x => (x * 0.001).toFixed(3) },
             { name: "氧乐果", limit: 0.02, unit: "mg/kg", derive: x => (x * 0.0008).toFixed(3) },
@@ -389,18 +395,24 @@
             { name: "丁硫克百威", limit: 0.01, unit: "mg/kg", derive: x => (x * 0.0012).toFixed(3) }
         ];
 
-        // 当前结果存储
-        let currentResults = {};
+        // ---------- 唯一数据源：永远存最新计算结果 ----------
+        let latestResults = {
+            inhibition: 7.8,        // 默认值
+            parallel: 7.5,
+            details: {},            // 每个农药的浓度和判定
+            anyOverLimit: false,
+            timestamp: Date.now()
+        };
 
-        // 渲染两个页面的农药卡片
+        // 初始化农药的details
+        pesticides.forEach(p => {
+            latestResults.details[p.name] = { conc: '0.008', over: false };
+        });
+
+        // ---------- 渲染两个页面的农药卡片 ----------
         function renderAllCards() {
-            // 页面1
-            let html1 = '';
-            // 页面2
-            let html2 = '';
-            
+            let html1 = '', html2 = '';
             pesticides.forEach(p => {
-                // 页面1卡片
                 html1 += `
                     <div class="pesticide-card">
                         <div class="pesticide-name">
@@ -421,8 +433,6 @@
                         </div>
                     </div>
                 `;
-                
-                // 页面2卡片
                 html2 += `
                     <div class="pesticide-card">
                         <div class="pesticide-name">
@@ -444,60 +454,50 @@
                     </div>
                 `;
             });
-            
             document.getElementById('pesticideGrid1').innerHTML = html1;
             document.getElementById('pesticideGrid2').innerHTML = html2;
         }
 
-        // 更新页面1的结果
-        function updatePage1(inh) {
-            let anyOver = false;
-            pesticides.forEach(p => {
-                const conc = parseFloat(p.derive(inh));
-                const over = conc >= p.limit;
-                if(over) anyOver = true;
-                document.getElementById(`p1-${p.name}-inh`).innerText = inh.toFixed(1) + '%';
-                document.getElementById(`p1-${p.name}-conc`).innerText = conc.toFixed(3);
-                document.getElementById(`p1-${p.name}-judge`).innerHTML = over ? '<span class="fail-badge">超标</span>' : '<span class="pass-badge">合格</span>';
-                currentResults[p.name] = { conc, over };
-            });
-        }
-
-        // 更新页面2的结果
-        function updatePage2(inh) {
-            let anyOver = false;
-            pesticides.forEach(p => {
-                const conc = parseFloat(p.derive(inh));
-                const over = conc >= p.limit;
-                if(over) anyOver = true;
-                document.getElementById(`p2-${p.name}-inh`).innerText = inh.toFixed(1) + '%';
-                document.getElementById(`p2-${p.name}-conc`).innerText = conc.toFixed(3);
-                document.getElementById(`p2-${p.name}-judge`).innerHTML = over ? '<span class="fail-badge">超标</span>' : '<span class="pass-badge">合格</span>';
-            });
+        // ---------- 核心函数：根据抑制率更新所有UI和数据源 ----------
+        function updateAllFromInhibition(inh, parallel = null, source = '科研') {
+            // 更新latestResults
+            latestResults.inhibition = inh;
+            if (parallel !== null) latestResults.parallel = parallel;
+            latestResults.timestamp = Date.now();
             
-            // 更新快检判定
-            let judgement = '';
-            if(inh >= 50 || anyOver) {
-                judgement = '❌ 超标阳性样品';
-            } else {
-                judgement = '✅ 合格样品';
-            }
-            document.getElementById('quickJudgement').innerHTML = `
-                <div style="font-weight:700; font-size:16px; margin-bottom:8px;">${judgement}</div>
-                <div style="font-size:13px; color:#4f6f55;">抑制率: ${inh.toFixed(1)}%</div>
-            `;
+            let anyOver = false;
+            pesticides.forEach(p => {
+                const conc = parseFloat(p.derive(inh));
+                const over = conc >= p.limit;
+                if (over) anyOver = true;
+                latestResults.details[p.name] = { conc: conc.toFixed(3), over };
+            });
+            latestResults.anyOverLimit = anyOver;
+
+            // 更新科研模式UI
+            pesticides.forEach(p => {
+                const d = latestResults.details[p.name];
+                document.getElementById(`p1-${p.name}-inh`).innerText = inh.toFixed(1) + '%';
+                document.getElementById(`p1-${p.name}-conc`).innerText = d.conc;
+                document.getElementById(`p1-${p.name}-judge`).innerHTML = d.over ? '<span class="fail-badge">超标</span>' : '<span class="pass-badge">合格</span>';
+                
+                document.getElementById(`p2-${p.name}-inh`).innerText = inh.toFixed(1) + '%';
+                document.getElementById(`p2-${p.name}-conc`).innerText = d.conc;
+                document.getElementById(`p2-${p.name}-judge`).innerHTML = d.over ? '<span class="fail-badge">超标</span>' : '<span class="pass-badge">合格</span>';
+            });
+
+            // 更新科研模式的抑制率显示（如果是科研模式自己算的，已经设过了，这里再同步一次）
+            document.getElementById('inhibitionRate').value = inh.toFixed(1);
+            
+            // 更新快检模式的输入框（让用户看到同步了）
+            document.getElementById('quickInhibition').value = inh.toFixed(1);
+
+            // 更新同步标记
+            document.getElementById('syncBadge1').innerText = source === '科研' ? '最新(科研)' : '同步自快检';
+            document.getElementById('syncBadge2').innerText = source === '快检' ? '最新(快检)' : '同步自科研';
         }
 
-        // 页面切换
-        window.switchPage = function(index) {
-            const container = document.getElementById('pagesContainer');
-            container.style.transform = `translateX(-${index * 100}%)`;
-            document.getElementById('navPage1').classList.toggle('active', index === 0);
-            document.getElementById('navPage2').classList.toggle('active', index === 1);
-            document.getElementById('navPage3').classList.toggle('active', index === 2);
-        };
-
-        // 科研模式计算
+        // ---------- 科研模式计算 ----------
         document.getElementById('calcInhibition').addEventListener('click', function() {
             const acBefore = parseFloat(document.getElementById('blankAcBefore').value) || 0;
             const acAfter = parseFloat(document.getElementById('blankAcAfter').value) || 0;
@@ -507,22 +507,33 @@
             const deltaAs = asBefore - asAfter;
             if(deltaAc <= 0) { alert('酶可能失效'); return; }
             const inh = ((1 - deltaAs/deltaAc) * 100);
-            document.getElementById('inhibitionRate').value = inh.toFixed(1);
-            updatePage1(inh);
+            const parallel = parseFloat(document.getElementById('inhibitionRateParallel').value) || 0;
+            
+            updateAllFromInhibition(inh, parallel, '科研');
         });
 
-        document.getElementById('deriveAll1').addEventListener('click', function() {
-            const inh = parseFloat(document.getElementById('inhibitionRate').value) || 0;
-            updatePage1(inh);
-        });
-
-        // 快检模式
+        // ---------- 快检模式计算 ----------
         document.getElementById('quickDerive').addEventListener('click', function() {
             const inh = parseFloat(document.getElementById('quickInhibition').value) || 0;
-            updatePage2(inh);
+            const parallel = parseFloat(document.getElementById('quickParallel').value) || 0;
+            updateAllFromInhibition(inh, parallel, '快检');
         });
 
-        // 浙农码功能
+        // ---------- 页面切换 ----------
+        window.switchPage = function(index) {
+            const container = document.getElementById('pagesContainer');
+            container.style.transform = `translateX(-${index * 100}%)`;
+            document.getElementById('navPage1').classList.toggle('active', index === 0);
+            document.getElementById('navPage2').classList.toggle('active', index === 1);
+            document.getElementById('navPage3').classList.toggle('active', index === 2);
+            
+            // 切换到第3页时，预填一次报告内容（用最新数据）
+            if(index === 2) {
+                // 可以在这里预生成报告预览，但为了流畅，等用户点按钮再生成
+            }
+        };
+
+        // ---------- 浙农码功能 ----------
         function displayTraceInfo(code) {
             const div = document.getElementById('traceInfo');
             div.style.display = 'block';
@@ -534,29 +545,52 @@
         });
         document.getElementById('manualFetchBtn').addEventListener('click', () => displayTraceInfo(document.getElementById('scanInput').value.trim()));
 
-        // 报告生成
+        // ---------- 报告生成（永远从latestResults取）----------
         document.getElementById('generateReport').addEventListener('click', function() {
             const div = document.getElementById('reportPreview');
             div.style.display = 'block';
-            let html = '<table class="report-table"><tr><th>农药</th><th>浓度</th><th>判定</th></tr>';
+            
+            let html = `
+                <div style="font-size:16px; font-weight:700; margin-bottom:12px;">📄 豇豆农残快检报告</div>
+                <div style="font-size:13px; color:#4f6f55; margin-bottom:12px;">
+                    抑制率: ${latestResults.inhibition.toFixed(1)}% | 平行样: ${latestResults.parallel.toFixed(1)}%
+                </div>
+                <table class="report-table">
+                    <tr><th>农药</th><th>浓度(mg/kg)</th><th>限量</th><th>判定</th></tr>
+            `;
+            
             pesticides.forEach(p => {
-                const res = currentResults[p.name] || { conc: '--', over: false };
-                html += `<tr><td>${p.name}</td><td>${res.conc}</td><td style="color:${res.over?'#c23b2b':'#1e6b1e'};">${res.over?'超标':'合格'}</td></tr>`;
+                const d = latestResults.details[p.name];
+                html += `
+                    <tr>
+                        <td>${p.name}</td>
+                        <td>${d.conc}</td>
+                        <td>${p.limit}</td>
+                        <td style="color:${d.over?'#c23b2b':'#1e6b1e'};">${d.over?'超标':'合格'}</td>
+                    </tr>
+                `;
             });
-            html += '</table><div style="margin-top:10px;">🔏 报告编号: ZN'+Date.now()+'</div>';
+            
+            html += `
+                </table>
+                <div style="margin-top:12px; padding:8px; background:#fff3d0; border-radius:12px; font-size:12px;">
+                    🔏 报告编号: ZN${Date.now()} | 基于${latestResults.timestamp ? '最新数据' : ''}
+                </div>
+            `;
+            
             div.innerHTML = html;
         });
 
-        document.getElementById('uploadToPlatform').addEventListener('click', () => alert('已上传至浙江追溯平台'));
+        document.getElementById('uploadToPlatform').addEventListener('click', () => {
+            alert(`✅ 检测数据已同步上传至浙江省农产品质量安全追溯平台\n批次：${document.getElementById('zhejiangCode').value}\n抑制率: ${latestResults.inhibition.toFixed(1)}%`);
+        });
 
-        // 初始化
+        // ---------- 初始化 ----------
         renderAllCards();
-        // 默认执行一次科研模式
+        // 用默认值初始化UI
         setTimeout(() => {
-            document.getElementById('calcInhibition').click();
-            // 快检默认也给个示例
-            document.getElementById('quickDerive').click();
-        }, 300);
+            updateAllFromInhibition(7.8, 7.5, '科研');
+        }, 200);
     </script>
 </body>
 </html>
