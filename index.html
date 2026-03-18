@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>豇豆农残·同步版（含平行样）</title>
+    <title>豇豆农残·智能混管版</title>
     <style>
-        /* 样式完全不变，省略节省空间，保留你之前的所有样式 */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -253,12 +252,47 @@
             font-size: 11px;
             margin-left: 8px;
         }
+        /* 混管系统特有样式 */
+        .crop-tag {
+            background: #e4efe4;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #1a4e2a;
+            border: 1px solid #b1d0b1;
+            cursor: pointer;
+            display: inline-block;
+            margin: 4px;
+        }
+        .mix-section {
+            background: #fff7e6;
+            border-radius: 24px;
+            padding: 22px;
+            border-left: 8px solid #d98c2e;
+            margin: 16px 0;
+        }
+        .mix-title {
+            font-weight: 700;
+            color: #6b4a1e;
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+        .mix-detail {
+            background: white;
+            padding: 18px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e4a2a;
+            border: 1px solid #f0d5a7;
+        }
     </style>
 </head>
 <body>
     <div class="app-header">
-        <span>🌾 豇豆农残·完全同步</span>
-        <span>V3.2</span>
+        <span>🌾 豇豆农残·智能混管</span>
+        <span>V4.0</span>
     </div>
 
     <div class="main-content" id="mainContent">
@@ -335,8 +369,37 @@
                 </div>
             </div>
 
-            <!-- 第3页：浙农码+报告 -->
+            <!-- 第3页：智能混管系统（原来的） -->
             <div class="page" id="page3">
+                <div class="mode-tag">🧪 智能混管系统</div>
+                <div class="card">
+                    <div class="card-title">🔍 蔬菜水果品种查询</div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <input type="text" id="cropInput" placeholder="例如：芹菜、草莓、韭菜" value="豇豆">
+                        </div>
+                        <button id="searchBtn">查询</button>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
+                        <span class="crop-tag" onclick="document.getElementById('cropInput').value='豇豆'; searchCrop()">豇豆</span>
+                        <span class="crop-tag" onclick="document.getElementById('cropInput').value='韭菜'; searchCrop()">韭菜</span>
+                        <span class="crop-tag" onclick="document.getElementById('cropInput').value='芹菜'; searchCrop()">芹菜</span>
+                        <span class="crop-tag" onclick="document.getElementById('cropInput').value='草莓'; searchCrop()">草莓</span>
+                        <span class="crop-tag" onclick="document.getElementById('cropInput').value='上海青'; searchCrop()">上海青</span>
+                        <span class="crop-tag" onclick="document.getElementById('cropInput').value='菠菜'; searchCrop()">菠菜</span>
+                    </div>
+                </div>
+
+                <div id="mixResult" class="card">
+                    <!-- 混管结果会动态显示在这里 -->
+                    <div style="text-align: center; color: #5f7e5f; padding: 20px;">
+                        输入品种后点击查询
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第4页：浙农码+报告 -->
+            <div class="page" id="page4">
                 <div class="mode-tag">🔗 浙农码溯源</div>
                 <div class="card">
                     <div class="card-title">扫码枪连接</div>
@@ -380,6 +443,10 @@
             <span>快检</span>
         </div>
         <div class="nav-item" id="navPage3" onclick="switchPage(2)">
+            <span>🧪</span>
+            <span>混管</span>
+        </div>
+        <div class="nav-item" id="navPage4" onclick="switchPage(3)">
             <span>🔗</span>
             <span>浙农码</span>
         </div>
@@ -396,7 +463,7 @@
             { name: "丁硫克百威", limit: 0.01, unit: "mg/kg", derive: x => (x * 0.0012).toFixed(3) }
         ];
 
-        // ---------- 唯一数据源：永远存最新计算结果 ----------
+        // ---------- 唯一数据源 ----------
         let latestResults = {
             inhibition: 7.8,
             parallel: 7.5,
@@ -409,6 +476,67 @@
         pesticides.forEach(p => {
             latestResults.details[p.name] = { conc: '0.008', over: false };
         });
+
+        // ---------- 混管系统数据库（原来的）----------
+        const cropDatabase = {
+            "豇豆": {
+                name: "豇豆",
+                passRate: 86.2,
+                pesticides: [
+                    { name: "氧乐果", level: "极高" },
+                    { name: "乙酰甲胺磷", level: "高" },
+                    { name: "灭蝇胺", level: "中高" }
+                ],
+                mixSuggestion: "🔄 混管数：每管 6 个样品 | 提取液比例 1:1.2 (规避豆荚基质干扰)"
+            },
+            "韭菜": {
+                name: "韭菜",
+                passRate: 79.5,
+                pesticides: [
+                    { name: "辛硫磷", level: "极高" },
+                    { name: "对硫磷", level: "高" },
+                    { name: "腐霉利", level: "高" }
+                ],
+                mixSuggestion: "🧅 辛辣基质干扰，建议样品稀释2倍，每管 5 个样品"
+            },
+            "芹菜": {
+                name: "芹菜",
+                passRate: 82.3,
+                pesticides: [
+                    { name: "毒死蜱", level: "高" },
+                    { name: "甲拌磷", level: "中高" },
+                    { name: "腐霉利", level: "中" }
+                ],
+                mixSuggestion: "🌿 挥发性物质干扰，每管 7 个样品，匀浆后静置5分钟"
+            },
+            "草莓": {
+                name: "草莓",
+                passRate: 97.5,
+                pesticides: [
+                    { name: "烯酰吗啉", level: "中" },
+                    { name: "吡唑醚菌酯", level: "中低" }
+                ],
+                mixSuggestion: "🍓 合格率较高，每管 8 个样品混检"
+            },
+            "上海青": {
+                name: "上海青",
+                passRate: 93.2,
+                pesticides: [
+                    { name: "啶虫脒", level: "较高" },
+                    { name: "氯氰菊酯", level: "中" }
+                ],
+                mixSuggestion: "🥬 每管 9 个样品，常规提取"
+            },
+            "菠菜": {
+                name: "菠菜",
+                passRate: 95.8,
+                pesticides: [
+                    { name: "毒死蜱", level: "中" },
+                    { name: "氯氟氰菊酯", level: "中低" }
+                ],
+                mixSuggestion: "🌱 色素重，建议活性炭脱色，每管 7 个样品"
+            }
+        };
 
         // ---------- 渲染两个页面的农药卡片 ----------
         function renderAllCards() {
@@ -459,9 +587,8 @@
             document.getElementById('pesticideGrid2').innerHTML = html2;
         }
 
-        // ---------- 核心函数：根据抑制率和平行样更新所有UI和数据源 ----------
+        // ---------- 核心函数：更新所有UI和数据源 ----------
         function updateAllFromInhibition(inh, parallel = null, source = '科研') {
-            // 更新latestResults
             latestResults.inhibition = inh;
             if (parallel !== null) {
                 latestResults.parallel = parallel;
@@ -477,7 +604,7 @@
             });
             latestResults.anyOverLimit = anyOver;
 
-            // 更新科研模式UI
+            // 更新所有UI
             pesticides.forEach(p => {
                 const d = latestResults.details[p.name];
                 document.getElementById(`p1-${p.name}-inh`).innerText = inh.toFixed(1) + '%';
@@ -522,6 +649,54 @@
             updateAllFromInhibition(inh, parallel, '快检');
         });
 
+        // ---------- 混管系统查询 ----------
+        window.searchCrop = function() {
+            const cropName = document.getElementById('cropInput').value.trim();
+            const crop = cropDatabase[cropName];
+            const resultDiv = document.getElementById('mixResult');
+            
+            if (!crop) {
+                resultDiv.innerHTML = `
+                    <div class="card-title">❌ 未找到</div>
+                    <div style="padding: 20px; text-align: center; color: #b33a2a;">
+                        暂无「${cropName}」的农残档案
+                    </div>
+                `;
+                return;
+            }
+
+            let pestHtml = '';
+            crop.pesticides.forEach(p => {
+                pestHtml += `
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #b1cfb1;">
+                        <span>🧪 ${p.name}</span>
+                        <span style="background: #fff; padding: 2px 12px; border-radius: 20px;">${p.level}</span>
+                    </div>
+                `;
+            });
+
+            const pass = crop.passRate;
+            const hasMix = pass >= 94;
+
+            resultDiv.innerHTML = `
+                <div class="card-title">🌱 ${crop.name}</div>
+                <div style="background: #ebf5ea; border-radius: 18px; padding: 16px; margin-bottom: 16px;">
+                    <div style="font-weight:600; margin-bottom:8px;">⚠️ 高风险农残</div>
+                    ${pestHtml}
+                </div>
+                <div style="display: flex; justify-content: space-between; background: white; padding: 16px; border-radius: 18px; border:1px solid #bee0be; margin-bottom:16px;">
+                    <span style="font-weight:600;">总体合格率</span>
+                    <span style="font-size:28px; font-weight:800; color:#1a4a2a;">${pass}%</span>
+                </div>
+                <div class="mix-section">
+                    <div class="mix-title">🧴 混管方案</div>
+                    <div class="mix-detail">${crop.mixSuggestion}</div>
+                </div>
+            `;
+        };
+
+        document.getElementById('searchBtn').addEventListener('click', searchCrop);
+
         // ---------- 页面切换 ----------
         window.switchPage = function(index) {
             const container = document.getElementById('pagesContainer');
@@ -529,6 +704,15 @@
             document.getElementById('navPage1').classList.toggle('active', index === 0);
             document.getElementById('navPage2').classList.toggle('active', index === 1);
             document.getElementById('navPage3').classList.toggle('active', index === 2);
+            document.getElementById('navPage4').classList.toggle('active', index === 3);
+            
+            // 切换到混管页时，默认查询豇豆
+            if(index === 2) {
+                setTimeout(() => {
+                    document.getElementById('cropInput').value = '豇豆';
+                    searchCrop();
+                }, 100);
+            }
         };
 
         // ---------- 浙农码功能 ----------
@@ -543,7 +727,7 @@
         });
         document.getElementById('manualFetchBtn').addEventListener('click', () => displayTraceInfo(document.getElementById('scanInput').value.trim()));
 
-        // ---------- 报告生成（永远从latestResults取）----------
+        // ---------- 报告生成 ----------
         document.getElementById('generateReport').addEventListener('click', function() {
             const div = document.getElementById('reportPreview');
             div.style.display = 'block';
@@ -585,9 +769,11 @@
 
         // ---------- 初始化 ----------
         renderAllCards();
-        // 用默认值初始化UI
         setTimeout(() => {
             updateAllFromInhibition(7.8, 7.5, '科研');
+            // 默认查询豇豆
+            document.getElementById('cropInput').value = '豇豆';
+            searchCrop();
         }, 200);
     </script>
 </body>
