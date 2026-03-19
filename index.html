@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
-    <title>豇豆农残·标准曲线版（平行样+阳性对照）</title>
+    <title>豇豆农残·平行样版（修复版）</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* 样式完全不变，和上一版一样 */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -690,10 +689,8 @@
 
         // ---------- 计算所有农药浓度（用阳性对照组）----------
         function calculateAllConcentrations() {
-            // 先更新平行样平均值（只显示）
             calculateParallelAvg();
             
-            // 用阳性对照组计算
             let inh = parseFloat(document.getElementById('positiveControl').value);
             if (isNaN(inh) || inh < 0 || inh > 100) {
                 alert('请输入有效的阳性对照抑制率 (0-100)');
@@ -827,4 +824,18 @@
         document.getElementById('calcAllConcentrations').addEventListener('click', calculateAllConcentrations);
         document.getElementById('resetData').addEventListener('click', initDataGrid);
         
-        // 
+        // 平行样输入变化时自动更新平均值
+        document.getElementById('parallel1').addEventListener('input', calculateParallelAvg);
+        document.getElementById('parallel2').addEventListener('input', calculateParallelAvg);
+        document.getElementById('parallel3').addEventListener('input', calculateParallelAvg);
+        document.getElementById('positiveControl').addEventListener('input', function() {
+            // 可以实时更新显示，但不自动计算，保持手动计算
+        });
+
+        // ---------- 初始化 ----------
+        initDataGrid();
+        initPesticideGrid();
+        calculateParallelAvg();
+        setTimeout(() => {
+            searchCrop();
+        }, 200
