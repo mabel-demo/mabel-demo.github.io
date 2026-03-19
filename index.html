@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>豇豆农残·智能混管版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes, viewport-fit=cover">
+    <title>豇豆农残·智能混管·平板版</title>
     <style>
+        /* ========== 基础样式 ========== */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -252,7 +253,6 @@
             font-size: 11px;
             margin-left: 8px;
         }
-        /* 混管系统特有样式 */
         .crop-tag {
             background: #e4efe4;
             padding: 8px 20px;
@@ -287,12 +287,89 @@
             color: #1e4a2a;
             border: 1px solid #f0d5a7;
         }
+
+        /* ========== 平板自适应 ========== */
+        /* 平板竖屏 (768px - 992px) */
+        @media screen and (min-width: 768px) and (max-width: 992px) {
+            .pesticide-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+            .input-row {
+                flex-wrap: nowrap;
+            }
+            .card {
+                padding: 22px 20px;
+            }
+            body {
+                font-size: 16px;
+            }
+            .nav-item {
+                padding: 12px 0;
+            }
+            button {
+                padding: 14px 22px;
+                font-size: 15px;
+            }
+            input, select {
+                padding: 14px 16px;
+            }
+        }
+
+        /* 平板横屏/小桌面 (992px以上) */
+        @media screen and (min-width: 992px) {
+            .pesticide-grid {
+                grid-template-columns: 1fr 1fr 1fr 1fr;
+            }
+            .input-group {
+                min-width: 180px;
+            }
+            .card {
+                padding: 24px;
+            }
+            .card-title {
+                font-size: 18px;
+            }
+            body {
+                font-size: 16px;
+            }
+            .nav-item {
+                padding: 14px 0;
+            }
+            .nav-item span {
+                font-size: 24px;
+            }
+            button {
+                padding: 14px 24px;
+                font-size: 16px;
+            }
+            input, select {
+                padding: 14px 16px;
+                font-size: 15px;
+            }
+            
+            /* 平板横屏分栏布局 */
+            .page {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+            }
+            
+            /* 让某些卡片跨两列 */
+            .card:first-child {
+                grid-column: 1 / -1;
+            }
+            
+            /* 混管页特殊处理 */
+            .page:nth-child(3) .card {
+                grid-column: auto;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="app-header">
-        <span>🌾 豇豆农残·智能混管</span>
-        <span>V4.0</span>
+        <span>🌾 豇豆农残·智能混管·平板版</span>
+        <span>V4.1</span>
     </div>
 
     <div class="main-content" id="mainContent">
@@ -369,7 +446,7 @@
                 </div>
             </div>
 
-            <!-- 第3页：智能混管系统（原来的） -->
+            <!-- 第3页：智能混管系统 -->
             <div class="page" id="page3">
                 <div class="mode-tag">🧪 智能混管系统</div>
                 <div class="card">
@@ -391,7 +468,6 @@
                 </div>
 
                 <div id="mixResult" class="card">
-                    <!-- 混管结果会动态显示在这里 -->
                     <div style="text-align: center; color: #5f7e5f; padding: 20px;">
                         输入品种后点击查询
                     </div>
@@ -453,7 +529,7 @@
     </div>
 
     <script>
-        // ---------- 农药数据库（共用）----------
+        // ---------- 农药数据库 ----------
         const pesticides = [
             { name: "乙酰甲胺磷", limit: 0.05, unit: "mg/kg", derive: x => (x * 0.001).toFixed(3) },
             { name: "氧乐果", limit: 0.02, unit: "mg/kg", derive: x => (x * 0.0008).toFixed(3) },
@@ -463,7 +539,7 @@
             { name: "丁硫克百威", limit: 0.01, unit: "mg/kg", derive: x => (x * 0.0012).toFixed(3) }
         ];
 
-        // ---------- 唯一数据源 ----------
+        // ---------- 数据源 ----------
         let latestResults = {
             inhibition: 7.8,
             parallel: 7.5,
@@ -472,12 +548,11 @@
             timestamp: Date.now()
         };
 
-        // 初始化农药的details
         pesticides.forEach(p => {
             latestResults.details[p.name] = { conc: '0.008', over: false };
         });
 
-        // ---------- 混管系统数据库（原来的）----------
+        // ---------- 混管数据库 ----------
         const cropDatabase = {
             "豇豆": {
                 name: "豇豆",
@@ -538,7 +613,7 @@
             }
         };
 
-        // ---------- 渲染两个页面的农药卡片 ----------
+        // ---------- 渲染卡片 ----------
         function renderAllCards() {
             let html1 = '', html2 = '';
             pesticides.forEach(p => {
@@ -587,7 +662,7 @@
             document.getElementById('pesticideGrid2').innerHTML = html2;
         }
 
-        // ---------- 核心函数：更新所有UI和数据源 ----------
+        // ---------- 更新UI ----------
         function updateAllFromInhibition(inh, parallel = null, source = '科研') {
             latestResults.inhibition = inh;
             if (parallel !== null) {
@@ -604,7 +679,6 @@
             });
             latestResults.anyOverLimit = anyOver;
 
-            // 更新所有UI
             pesticides.forEach(p => {
                 const d = latestResults.details[p.name];
                 document.getElementById(`p1-${p.name}-inh`).innerText = inh.toFixed(1) + '%';
@@ -616,18 +690,16 @@
                 document.getElementById(`p2-${p.name}-judge`).innerHTML = d.over ? '<span class="fail-badge">超标</span>' : '<span class="pass-badge">合格</span>';
             });
 
-            // 更新所有输入框
             document.getElementById('inhibitionRate').value = inh.toFixed(1);
             document.getElementById('inhibitionRateParallel').value = latestResults.parallel.toFixed(1);
             document.getElementById('quickInhibition').value = inh.toFixed(1);
             document.getElementById('quickParallel').value = latestResults.parallel.toFixed(1);
 
-            // 更新同步标记
             document.getElementById('syncBadge1').innerText = source === '科研' ? '最新(科研)' : '同步自快检';
             document.getElementById('syncBadge2').innerText = source === '快检' ? '最新(快检)' : '同步自科研';
         }
 
-        // ---------- 科研模式计算 ----------
+        // ---------- 科研模式 ----------
         document.getElementById('calcInhibition').addEventListener('click', function() {
             const acBefore = parseFloat(document.getElementById('blankAcBefore').value) || 0;
             const acAfter = parseFloat(document.getElementById('blankAcAfter').value) || 0;
@@ -638,18 +710,17 @@
             if(deltaAc <= 0) { alert('酶可能失效'); return; }
             const inh = ((1 - deltaAs/deltaAc) * 100);
             const parallel = parseFloat(document.getElementById('inhibitionRateParallel').value) || 0;
-            
             updateAllFromInhibition(inh, parallel, '科研');
         });
 
-        // ---------- 快检模式计算 ----------
+        // ---------- 快检模式 ----------
         document.getElementById('quickDerive').addEventListener('click', function() {
             const inh = parseFloat(document.getElementById('quickInhibition').value) || 0;
             const parallel = parseFloat(document.getElementById('quickParallel').value) || 0;
             updateAllFromInhibition(inh, parallel, '快检');
         });
 
-        // ---------- 混管系统查询 ----------
+        // ---------- 混管查询 ----------
         window.searchCrop = function() {
             const cropName = document.getElementById('cropInput').value.trim();
             const crop = cropDatabase[cropName];
@@ -675,9 +746,6 @@
                 `;
             });
 
-            const pass = crop.passRate;
-            const hasMix = pass >= 94;
-
             resultDiv.innerHTML = `
                 <div class="card-title">🌱 ${crop.name}</div>
                 <div style="background: #ebf5ea; border-radius: 18px; padding: 16px; margin-bottom: 16px;">
@@ -686,7 +754,7 @@
                 </div>
                 <div style="display: flex; justify-content: space-between; background: white; padding: 16px; border-radius: 18px; border:1px solid #bee0be; margin-bottom:16px;">
                     <span style="font-weight:600;">总体合格率</span>
-                    <span style="font-size:28px; font-weight:800; color:#1a4a2a;">${pass}%</span>
+                    <span style="font-size:28px; font-weight:800; color:#1a4a2a;">${crop.passRate}%</span>
                 </div>
                 <div class="mix-section">
                     <div class="mix-title">🧴 混管方案</div>
@@ -706,7 +774,6 @@
             document.getElementById('navPage3').classList.toggle('active', index === 2);
             document.getElementById('navPage4').classList.toggle('active', index === 3);
             
-            // 切换到混管页时，默认查询豇豆
             if(index === 2) {
                 setTimeout(() => {
                     document.getElementById('cropInput').value = '豇豆';
@@ -715,7 +782,7 @@
             }
         };
 
-        // ---------- 浙农码功能 ----------
+        // ---------- 浙农码 ----------
         function displayTraceInfo(code) {
             const div = document.getElementById('traceInfo');
             div.style.display = 'block';
@@ -727,7 +794,7 @@
         });
         document.getElementById('manualFetchBtn').addEventListener('click', () => displayTraceInfo(document.getElementById('scanInput').value.trim()));
 
-        // ---------- 报告生成 ----------
+        // ---------- 报告 ----------
         document.getElementById('generateReport').addEventListener('click', function() {
             const div = document.getElementById('reportPreview');
             div.style.display = 'block';
@@ -756,7 +823,7 @@
             html += `
                 </table>
                 <div style="margin-top:12px; padding:8px; background:#fff3d0; border-radius:12px; font-size:12px;">
-                    🔏 报告编号: ZN${Date.now()} | 基于最新数据
+                    🔏 报告编号: ZN${Date.now()}
                 </div>
             `;
             
@@ -771,7 +838,6 @@
         renderAllCards();
         setTimeout(() => {
             updateAllFromInhibition(7.8, 7.5, '科研');
-            // 默认查询豇豆
             document.getElementById('cropInput').value = '豇豆';
             searchCrop();
         }, 200);
